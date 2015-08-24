@@ -8,5 +8,5 @@ setup(name='ionyx',
       author_email='jdwittenauer@gmail.com',
       url='https://github.com/jdwittenauer/ionyx',
       license='Apache',
-      install_requires=[],
+      install_requires=['numpy'],
       packages=find_packages())
