@@ -10,7 +10,6 @@ This project is extremely early in development.  Below is a summary of tasks req
 - add project documentation and usage examples
 - re-factor visualization functions to have a cleaner API
 - update seaborn calls to use the 0.6 APIs
-- update ensemble functions with proper imports and remove hard-coded dependencies
 - create emsemble classes and make the design more flexible than current functions
 - finish the "AllLabelEncoder" class
 - finish the "FactorToNumeric" class

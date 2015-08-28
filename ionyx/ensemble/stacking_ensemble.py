@@ -1,9 +1,18 @@
-def train_stacked_ensemble(X, y, X_test, metric, transforms, n_folds):
+import time
+import numpy as np
+import pandas as pd
+from sklearn.cross_validation import KFold
+from sklearn.linear_model import Ridge
+
+from ..utils.utils import fit_transforms, apply_transforms, score
+from ..visualization.visualization import visualize_correlations
+
+
+def train_stacked_ensemble(X, y, X_test, models, metric, transforms, n_folds):
     """
     Creates a stacked ensemble of many models together.
     """
     t0 = time.time()
-    models = bag_of_models(X.shape[1])
     stacker = Ridge()
     n_models = len(models)
     n_records = y.shape[0]
