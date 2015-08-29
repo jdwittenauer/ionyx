@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class FactorToNumeric(object):
+class CategoryToNumeric(object):
     def __init__(self, categorical_features=None, metric='mean'):
         self.categorical_features = categorical_features
         self.metric = metric
@@ -33,3 +33,6 @@ class FactorToNumeric(object):
     def fit_transform(self, X, y):
         self.fit(X, y)
         return self.transform(X)
+
+    def __repr__(self):
+        return '%s' % self.__class__.__name__
