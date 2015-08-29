@@ -11,8 +11,6 @@ This project is extremely early in development.  Below is a summary of tasks req
 - re-factor visualization functions to have a cleaner API
 - update seaborn calls to use the 0.6 APIs
 - create emsemble classes and make the design more flexible than current functions
-- finish the "AllLabelEncoder" class
-- finish the "FactorToNumeric" class
 - extend support for loading and saving models to handle a much wider variety of use cases
 - incorporate model definition, training, cross-validation, and parameter search from origin kaggle scripts
 - extend parameter search capabilities to be flexible and use random search where possible

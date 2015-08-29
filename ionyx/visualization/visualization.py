@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sb
 
-from ..utils.utils import *
+from ..utils.utils import fit_transforms, apply_transforms
 
 
 def visualize_variable_relationships(train_data, viz_type, quantitative_vars, category_vars=None):
@@ -145,3 +145,22 @@ def visualize_transforms(X, y, model_type, n_components, transforms):
             ax.legend()
             fig.colorbar(sc)
             fig.tight_layout()
+
+
+def visualize_feature_importance(feature_importance, feature_names, column_offset=0, n_features=30):
+    """
+    Generates a feature importance plot.
+    """
+    feature_importance = 100.0 * (feature_importance / feature_importance.max())
+    importance = feature_importance[0:n_features] if len(feature_names) > n_features else feature_importance
+    sorted_idx = np.argsort(feature_importance)
+    pos = np.arange(sorted_idx.shape[0])
+
+    fig, ax = plt.subplots(figsize=(16, 10))
+    ax.set_title('Variable Importance')
+    ax.barh(pos, importance[sorted_idx], align='center')
+    ax.set_yticks(pos)
+    ax.set_yticklabels(feature_names[sorted_idx + column_offset])
+    ax.set_xlabel('Relative Importance')
+
+    fig.tight_layout()
