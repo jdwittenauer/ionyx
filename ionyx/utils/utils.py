@@ -1,5 +1,27 @@
 import pickle
+import pandas as pd
 from sklearn.metrics import *
+
+
+def load_csv_data(directory, filename, dtype=None, index=None, convert_to_date=False):
+    """
+    Load a csv data file into a data frame, setting the index as appropriate.
+    """
+    data = pd.read_csv(directory + filename, sep=',', dtype=dtype)
+
+    if index is not None:
+        if convert_to_date:
+            if type(index) is str:
+                data[index] = data[index].convert_objects(convert_dates='coerce')
+            else:
+                for key in index:
+                    data[key] = data[key].convert_objects(convert_dates='coerce')
+
+        data = data.set_index(index)
+
+    print('Data file ' + filename + ' loaded successfully.')
+
+    return data
 
 def load_model(filename):
     """
