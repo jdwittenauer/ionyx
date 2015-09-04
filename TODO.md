@@ -11,6 +11,7 @@ This project is extremely early in development.  Below is a summary of tasks req
 - re-factor visualization functions to have a cleaner API
 - update seaborn calls to use the 0.6 APIs
 - create emsemble classes and make the design more flexible than current functions
+- update model definition, training, cross-validation, and parameter search methods to be more generic
 - extend support for loading and saving models to handle a much wider variety of use cases
 - extend parameter search capabilities to be flexible and use random search where possible
 - add optional extensions/dependencies for additional libraries
