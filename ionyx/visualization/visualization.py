@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sb
 
-from ..utils.utils import fit_transforms, apply_transforms
+from ..utils import fit_transforms, apply_transforms
 
 
 def visualize_variable_relationships(train_data, viz_type, quantitative_vars, category_vars=None):

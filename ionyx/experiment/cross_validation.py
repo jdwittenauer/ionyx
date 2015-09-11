@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.cross_validation import KFold
 from sklearn.learning_curve import learning_curve
 
-from ..utils.utils import fit_transforms, apply_transforms, score
+from ..utils import fit_transforms, apply_transforms, score
 
 
 def cross_validate(X, y, algorithm, model, metric, transforms, n_folds):

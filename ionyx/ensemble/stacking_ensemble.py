@@ -4,8 +4,8 @@ import pandas as pd
 from sklearn.cross_validation import KFold
 from sklearn.linear_model import Ridge
 
-from ..utils.utils import fit_transforms, apply_transforms, score
-from ..visualization.visualization import visualize_correlations
+from ..utils import fit_transforms, apply_transforms, score
+from ..visualization import visualize_correlations
 
 
 def train_stacked_ensemble(X, y, X_test, models, metric, transforms, n_folds):

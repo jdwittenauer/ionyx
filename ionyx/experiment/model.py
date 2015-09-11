@@ -8,7 +8,7 @@ from keras.layers.advanced_activations import *
 from keras.models import *
 from keras.optimizers import *
 
-from ..utils.utils import fit_transforms, apply_transforms, predict_score
+from ..utils import fit_transforms, apply_transforms, predict_score
 
 
 def define_nn_model(input_size, layer_size, output_size, n_hidden_layers, init_method, loss_function,

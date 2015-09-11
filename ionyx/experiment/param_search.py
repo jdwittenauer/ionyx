@@ -3,8 +3,8 @@ from sklearn.cross_validation import train_test_split
 from sklearn.grid_search import *
 from xgboost import *
 
-from ..utils.utils import fit_transforms, apply_transforms, predict_score
-from ..experiment.model import define_nn_model
+from ..utils import fit_transforms, apply_transforms, predict_score
+from ..experiment import define_nn_model
 
 
 def parameter_search(X, y, algorithm, model, metric, transforms, n_folds):
