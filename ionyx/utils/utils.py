@@ -3,6 +3,28 @@ import pandas as pd
 from sklearn.metrics import *
 
 
+def create_class(import_path, module_name, class_name, *params):
+    """
+    Returns an instantiated class for the given string descriptors.
+
+    Parameters
+    ----------
+    import_path: The path to the module
+    module_name: The module name
+    class_name: The class name
+    params: Any fields required to instantiate the class
+
+    Returns
+    ----------
+    self: An instance of the class.
+    """
+    p = __import__(import_path)
+    m = getattr(p, module_name)
+    c = getattr(m, class_name)
+    instance = c(*params)
+    return instance
+
+
 def load_csv_data(directory, filename, dtype=None, index=None, convert_to_date=False):
     """
     Load a csv data file into a data frame, setting the index as appropriate.
