@@ -15,3 +15,5 @@ This project is extremely early in development.  Below is a summary of tasks req
 - extend support for loading and saving models to handle a much wider variety of use cases
 - model.py - XGBoost min eval loss/iteration
 - model.py - training history plot function
+- cross_validation.py - review sequence cross-validation functionality
+- cross_validation.py - make learning curve plots part of cross-validation functions

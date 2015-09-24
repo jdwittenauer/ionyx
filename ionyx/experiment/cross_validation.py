@@ -7,11 +7,12 @@ from sklearn.learning_curve import learning_curve
 from ..utils import fit_transforms, apply_transforms, score
 
 
-def cross_validate(X, y, algorithm, model, metric, transforms, n_folds):
+def cross_validate(X, y, model, metric, transforms, n_folds):
     """
-    Performs manual cross-validation to estimate the true performance of the model.
+    Performs cross-validation to estimate the true performance of the model.
     """
     t0 = time.time()
+    y_train_scores = []
     y_pred = np.array([])
     y_true = np.array([])
 
@@ -27,20 +28,19 @@ def cross_validate(X, y, algorithm, model, metric, transforms, n_folds):
         X_train = apply_transforms(X_train, transforms)
         X_eval = apply_transforms(X_eval, transforms)
 
-        if algorithm == 'nn':
-            model.fit(X_train, y_train, batch_size=128, nb_epoch=100, verbose=0,
-                      validation_data=(X_eval, y_eval), shuffle=True)
-        elif algorithm == 'xgb':
-            model.fit(X_train, y_train)
+        model.fit(X_train, y_train)
 
+        y_train_scores.append(score(y_train, model.predict(X_train), metric))
         y_pred = np.append(y_pred, model.predict(X_eval))
         y_true = np.append(y_true, y_eval)
 
     t1 = time.time()
     print('Cross-validation completed in {0:3f} s.'.format(t1 - t0))
 
+    print('Average training score = '), sum(y_train_scores) / len(y_train_scores)
+
     cross_validation_score = score(y_true, y_pred, metric)
-    print('Cross-validation score ='), cross_validation_score
+    print('Cross-validation score = '), cross_validation_score
 
     return cross_validation_score
 
