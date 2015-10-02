@@ -66,30 +66,39 @@ def visualize_variable_relationships(data, quantitative_vars, category_vars=None
                         diag_kind=pair_diag_type, size=fig_size / len(quantitative_vars))
 
 
-def visualize_feature_distributions(train_data, viz_type, plot_size):
+def visualize_feature_distributions(data, viz_type='hist', bins=None, grid_size=4, fig_size=20):
     """
     Generates feature distribution plots (histogram or kde) for each feature.
     """
     if viz_type == 'hist':
         hist = True
         kde = False
-    else:
+    elif viz_type == 'kde':
         hist = False
         kde = True
+    elif viz_type == 'both':
+        hist = True
+        kde = True
+    else:
+        raise Exception('Visualization type not supported.')
 
-    num_features = len(train_data.columns)
-    num_plots = num_features / plot_size if num_features % plot_size == 0 else num_features / plot_size + 1
+    # replace NaN values with 0 to prevent exceptions in the lower level API calls
+    data = data.fillna(0)
 
-    for i in range(num_plots):
-        fig, ax = plt.subplots(4, 4, figsize=(20, 10))
+    n_features = len(data.columns)
+    plot_size = grid_size ** 2
+    n_plots = n_features / plot_size if n_features % plot_size == 0 else n_features / plot_size + 1
+
+    for i in range(n_plots):
+        fig, ax = plt.subplots(grid_size, grid_size, figsize=(fig_size, fig_size / 2))
         for j in range(plot_size):
             index = (i * plot_size) + j
-            if index < num_features:
-                if type(train_data.iloc[0, index]) is str:
-                    sb.countplot(x=train_data.columns[index], data=train_data, ax=ax[j / 4, j % 4])
+            if index < n_features:
+                if type(data.iloc[0, index]) is str:
+                    sb.countplot(x=data.columns[index], data=data, ax=ax[j / grid_size, j % grid_size])
                 else:
-                    sb.distplot(train_data.iloc[:, index], hist=hist, kde=kde, label=train_data.columns[index],
-                                ax=ax[j / 4, j % 4], kde_kws={"shade": True})
+                    sb.distplot(a=data.iloc[:, index], bins=bins, hist=hist, kde=kde, label=data.columns[index],
+                                ax=ax[j / grid_size, j % grid_size], kde_kws={"shade": True})
         fig.tight_layout()
 
 
