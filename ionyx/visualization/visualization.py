@@ -6,49 +6,64 @@ import seaborn as sb
 from ..utils import fit_transforms, apply_transforms
 
 
-def visualize_variable_relationships(train_data, viz_type, quantitative_vars, category_vars=None):
+def visualize_variable_relationships(data, quantitative_vars, category_vars=None, joint_viz_type='scatter',
+                                     pair_viz_type='scatter', factor_viz_type='strip', pair_diag_type='kde',
+                                     fig_size=16):
     """
     Generates plots showing the relationship between several variables.
     """
+    if quantitative_vars is None or len(quantitative_vars) == 0:
+        raise Exception('Must provide at least one quantitative variable.')
+
     # compare the continuous variable distributions using a violin plot
-    sub_data = train_data[quantitative_vars]
-    fig, ax = plt.subplots(1, 1, figsize=(16, 12))
-    sb.violinplot(sub_data, ax=ax)
+    sub_data = data[quantitative_vars]
+    fig, ax = plt.subplots(1, 1, figsize=(fig_size, fig_size * 3 / 4))
+    sb.violinplot(data=sub_data, ax=ax)
     fig.tight_layout()
 
     # if categorical variables were provided, visualize the quantitative distributions by category
     if category_vars is not None:
-        fig, ax = plt.subplots(len(quantitative_vars), len(category_vars), figsize=(16, 12))
-        for i, var in enumerate(quantitative_vars):
-            for j, cat in enumerate(category_vars):
-                sb.violinplot(train_data[var], train_data[cat], ax=ax[i, j])
+        fig, ax = plt.subplots(len(quantitative_vars), len(category_vars), figsize=(fig_size, fig_size * 3 / 4))
+        if len(quantitative_vars) == 1:
+            if len(category_vars) == 1:
+                sb.violinplot(x=quantitative_vars[0], y=category_vars[0], data=data, ax=ax)
+            else:
+                for i, cat in enumerate(category_vars):
+                    sb.violinplot(x=quantitative_vars[0], y=cat, data=data, ax=ax[i])
+        else:
+            for i, var in enumerate(quantitative_vars):
+                if len(category_vars) == 1:
+                    sb.violinplot(x=var, y=category_vars[0], data=data, ax=ax[i])
+                else:
+                    for j, cat in enumerate(category_vars):
+                        sb.violinplot(x=var, y=cat, data=data, ax=ax[i, j])
         fig.tight_layout()
 
     # generate plots to directly compare the variables
     if category_vars is None:
         if len(quantitative_vars) == 2:
-            sb.jointplot(quantitative_vars[0], quantitative_vars[1], train_data, kind=viz_type, size=16)
+            sb.jointplot(x=quantitative_vars[0], y=quantitative_vars[1], data=data, kind=joint_viz_type, size=fig_size)
         else:
-            sb.pairplot(train_data, vars=quantitative_vars, kind='scatter',
-                        diag_kind='kde', size=16 / len(quantitative_vars))
+            sb.pairplot(data=data, vars=quantitative_vars, kind=pair_viz_type,
+                        diag_kind=pair_diag_type, size=fig_size / len(quantitative_vars))
     else:
         if len(quantitative_vars) == 1:
             if len(category_vars) == 1:
-                sb.factorplot(category_vars[0], quantitative_vars[0], None,
-                              train_data, kind='auto', size=16)
+                sb.factorplot(x=category_vars[0], y=quantitative_vars[0],
+                              data=data, kind=factor_viz_type, size=fig_size)
             else:
-                sb.factorplot(category_vars[0], quantitative_vars[0], category_vars[1],
-                              train_data, kind='auto', size=16)
-        if len(quantitative_vars) == 2:
+                sb.factorplot(x=category_vars[0], y=quantitative_vars[0], hue=category_vars[1],
+                              data=data, kind=factor_viz_type, size=fig_size)
+        elif len(quantitative_vars) == 2:
             if len(category_vars) == 1:
-                sb.lmplot(quantitative_vars[0], quantitative_vars[1], train_data,
-                          col=None, row=category_vars[0], size=16)
+                sb.lmplot(x=quantitative_vars[0], y=quantitative_vars[1],
+                          data=data, row=category_vars[0], size=fig_size)
             else:
-                sb.lmplot(quantitative_vars[0], quantitative_vars[1], train_data,
-                          col=category_vars[0], row=category_vars[1], size=16)
+                sb.lmplot(x=quantitative_vars[0], y=quantitative_vars[1], data=data,
+                          col=category_vars[0], row=category_vars[1], size=fig_size)
         else:
-            sb.pairplot(train_data, hue=category_vars[0], vars=quantitative_vars, kind='scatter',
-                        diag_kind='kde', size=16 / len(quantitative_vars))
+            sb.pairplot(data=data, hue=category_vars[0], vars=quantitative_vars, kind=pair_viz_type,
+                        diag_kind=pair_diag_type, size=fig_size / len(quantitative_vars))
 
 
 def visualize_feature_distributions(train_data, viz_type, plot_size):
