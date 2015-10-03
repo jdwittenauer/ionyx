@@ -121,31 +121,39 @@ def visualize_correlations(data, annotate=False, fig_size=16):
     fig.tight_layout()
 
 
-def visualize_sequential_relationships(train_data, plot_size, smooth=None, window=1):
+def visualize_sequential_relationships(data, time='index', smooth_method=None, window=1, grid_size=4, fig_size=20):
     """
     Generates line plots to visualize sequential data.  Assumes the data frame index is time series.
     """
-    train_data.index.name = None
-    num_features = len(train_data.columns)
-    num_plots = num_features / plot_size if num_features % plot_size == 0 else num_features / plot_size + 1
+    # replace NaN values with 0 to prevent exceptions in the lower level API calls
+    data = data.fillna(0)
 
-    for i in range(num_plots):
-        fig, ax = plt.subplots(4, 4, sharex=True, figsize=(20, 10))
+    if time is not 'index':
+        data = data.reset_index()
+        data = data.set_index(time)
+
+    data.index.name = None
+    n_features = len(data.columns)
+    plot_size = grid_size ** 2
+    n_plots = n_features / plot_size if n_features % plot_size == 0 else n_features / plot_size + 1
+
+    for i in range(n_plots):
+        fig, ax = plt.subplots(grid_size, grid_size, sharex=True, figsize=(fig_size, fig_size / 2))
         for j in range(plot_size):
             index = (i * plot_size) + j
-            if index < num_features:
-                if index != 3:  # this column is all 0s in the bike set
-                    if smooth == 'mean':
-                        train_data.iloc[:, index] = pd.rolling_mean(train_data.iloc[:, index], window)
-                    elif smooth == 'var':
-                        train_data.iloc[:, index] = pd.rolling_var(train_data.iloc[:, index], window)
-                    elif smooth == 'skew':
-                        train_data.iloc[:, index] = pd.rolling_skew(train_data.iloc[:, index], window)
-                    elif smooth == 'kurt':
-                        train_data.iloc[:, index] = pd.rolling_kurt(train_data.iloc[:, index], window)
+            if index < n_features:
+                if type(data.iloc[0, index]) is not str:
+                    if smooth_method == 'mean':
+                        data.iloc[:, index] = pd.rolling_mean(data.iloc[:, index], window)
+                    elif smooth_method == 'var':
+                        data.iloc[:, index] = pd.rolling_var(data.iloc[:, index], window)
+                    elif smooth_method == 'skew':
+                        data.iloc[:, index] = pd.rolling_skew(data.iloc[:, index], window)
+                    elif smooth_method == 'kurt':
+                        data.iloc[:, index] = pd.rolling_kurt(data.iloc[:, index], window)
 
-                    train_data.iloc[:, index].plot(ax=ax[j / 4, j % 4], kind='line', legend=False,
-                                                   title=train_data.columns[index])
+                    data.iloc[:, index].plot(ax=ax[j / grid_size, j % grid_size], kind='line',
+                                             legend=False, title=data.columns[index])
         fig.tight_layout()
 
 
