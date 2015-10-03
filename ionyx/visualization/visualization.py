@@ -102,16 +102,22 @@ def visualize_feature_distributions(data, viz_type='hist', bins=None, grid_size=
         fig.tight_layout()
 
 
-def visualize_correlations(train_data):
+def visualize_correlations(data, annotate=False, fig_size=16):
     """
     Generates a correlation matrix heat map.
     """
-    fig, ax = plt.subplots(figsize=(16, 10))
+    corr = data.corr()
+
+    if annotate:
+        corr = np.round(corr, 2)
+
+    # generate a mask for the upper triangle
+    mask = np.zeros_like(corr, dtype=np.bool)
+    mask[np.triu_indices_from(mask)] = True
+
+    fig, ax = plt.subplots(figsize=(fig_size, fig_size * 3 / 4))
     colormap = sb.blend_palette(sb.color_palette('coolwarm'), as_cmap=True)
-    if len(train_data.columns) < 30:
-        sb.corrplot(train_data, annot=True, sig_stars=False, diag_names=True, cmap=colormap, ax=ax)
-    else:
-        sb.corrplot(train_data, annot=False, sig_stars=False, diag_names=False, cmap=colormap, ax=ax)
+    sb.heatmap(corr, mask=mask, cmap=colormap, annot=annotate)
     fig.tight_layout()
 
 
