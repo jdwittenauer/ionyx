@@ -157,9 +157,9 @@ def visualize_sequential_relationships(data, time='index', smooth_method=None, w
         fig.tight_layout()
 
 
-def visualize_transforms(X, y, model_type, n_components, transforms):
+def visualize_transforms(X, transforms, y=None, model_type=None, n_components=2, scatter_size=50, fig_size=16):
     """
-    Generates plots to visualize the data transformed by a non-linear manifold algorithm.
+    Generates plots to visualize the data transformed by a linear or manifold algorithm.
     """
     transforms = fit_transforms(X, y, transforms)
     X = apply_transforms(X, transforms)
@@ -169,23 +169,30 @@ def visualize_transforms(X, y, model_type, n_components, transforms):
         colors = sb.color_palette('hls', class_count)
 
         for i in range(n_components - 1):
-            fig, ax = plt.subplots(figsize=(16, 10))
+            fig, ax = plt.subplots(figsize=(fig_size, fig_size * 3 / 4))
             for j in range(class_count):
-                ax.scatter(X[y == j, i], X[y == j, i + 1], s=50, c=colors[j], label=j)
+                ax.scatter(X[y == j, i], X[y == j, i + 1], s=scatter_size, c=colors[j], label=j)
             ax.set_title('Components ' + str(i + 1) + ' and ' + str(i + 2))
             ax.legend()
             fig.tight_layout()
-    else:
+    elif model_type == 'regression':
         for i in range(n_components - 1):
-            fig, ax = plt.subplots(figsize=(16, 10))
-            sc = ax.scatter(X[:, i], X[:, i + 1], s=50, c=y, cmap='Reds')
+            fig, ax = plt.subplots(figsize=(fig_size, fig_size * 3 / 4))
+            sc = ax.scatter(X[:, i], X[:, i + 1], s=scatter_size, c=y, cmap='Blues')
             ax.set_title('Components ' + str(i + 1) + ' and ' + str(i + 2))
             ax.legend()
             fig.colorbar(sc)
             fig.tight_layout()
+    else:
+        for i in range(n_components - 1):
+            fig, ax = plt.subplots(figsize=(fig_size, fig_size * 3 / 4))
+            ax.scatter(X[:, i], X[:, i + 1], s=scatter_size)
+            ax.set_title('Components ' + str(i + 1) + ' and ' + str(i + 2))
+            ax.legend()
+            fig.tight_layout()
 
 
-def visualize_feature_importance(feature_importance, feature_names, column_offset=0, n_features=30):
+def visualize_feature_importance(feature_importance, feature_names, n_features=30, fig_size=16):
     """
     Generates a feature importance plot.
     """
@@ -194,11 +201,11 @@ def visualize_feature_importance(feature_importance, feature_names, column_offse
     sorted_idx = np.argsort(feature_importance)
     pos = np.arange(sorted_idx.shape[0])
 
-    fig, ax = plt.subplots(figsize=(16, 10))
+    fig, ax = plt.subplots(figsize=(fig_size, fig_size * 3 / 4))
     ax.set_title('Variable Importance')
     ax.barh(pos, importance[sorted_idx], align='center')
     ax.set_yticks(pos)
-    ax.set_yticklabels(feature_names[sorted_idx + column_offset])
+    ax.set_yticklabels(feature_names[sorted_idx])
     ax.set_xlabel('Relative Importance')
 
     fig.tight_layout()
