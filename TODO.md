@@ -1,5 +1,4 @@
 # TODO
-======
 
 This project is extremely early in development.  Below is a summary of tasks required before the first alpha release.
 
