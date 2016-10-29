@@ -7,7 +7,26 @@ from ..utils import CategoryEncoder
 
 
 def load_bike_sharing():
-    z = ZipFile(os.getcwd() + '/data/bike_sharing.zip')
+    """
+    Loads and returns several variables for the data set from Kaggle's Bike Sharing Demand competition.
+    Link: https://www.kaggle.com/c/bike-sharing-demand
+
+    Returns
+    ----------
+    data : array-like
+        Pandas data frame containing the entire data set.
+
+    X : array-like
+        Training input samples.
+
+    y1 : array-like
+        First variable target values.
+
+    y2 : array-like
+        Second variable target values.
+    """
+    file_location = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'bike_sharing.zip')
+    z = ZipFile(file_location)
     data = pd.read_csv(z.open('train.csv'))
     data['datetime'] = data['datetime'].convert_objects(convert_dates='coerce')
     data = data.set_index('datetime')
@@ -26,7 +45,23 @@ def load_bike_sharing():
 
 
 def load_forest_cover():
-    z = ZipFile(os.getcwd() + '/data/forest_cover.zip')
+    """
+    Loads and returns several variables for the data set from Kaggle's Forest Cover Type Prediction competition.
+    Link: https://www.kaggle.com/c/forest-cover-type-prediction
+
+    Returns
+    ----------
+    data : array-like
+        Pandas data frame containing the entire data set.
+
+    X : array-like
+        Training input samples.
+
+    y : array-like
+        Target values.
+    """
+    file_location = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'forest_cover.zip')
+    z = ZipFile(file_location)
     data = pd.read_csv(z.open('train.csv'))
     data = data.set_index('Id')
 
@@ -42,7 +77,23 @@ def load_forest_cover():
 
 
 def load_otto_group():
-    z = ZipFile(os.getcwd() + '/data/otto_group.zip')
+    """
+    Loads and returns several variables for the data set from Kaggle's Otto Group Product Classification competition.
+    Link: https://www.kaggle.com/c/otto-group-product-classification-challenge
+
+    Returns
+    ----------
+    data : array-like
+        Pandas data frame containing the entire data set.
+
+    X : array-like
+        Training input samples.
+
+    y : array-like
+        Target values.
+    """
+    file_location = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'otto_group.zip')
+    z = ZipFile(file_location)
     data = pd.read_csv(z.open('train.csv'))
     data = data.set_index('id')
 
@@ -63,7 +114,23 @@ def load_otto_group():
 
 
 def load_property_inspection():
-    z = ZipFile(os.getcwd() + '/data/property_inspection.zip')
+    """
+    Loads and returns several variables for the data set from Kaggle's Property Inspection Prediction competition.
+    Link: https://www.kaggle.com/c/liberty-mutual-group-property-inspection-prediction
+
+    Returns
+    ----------
+    data : array-like
+        Pandas data frame containing the entire data set.
+
+    X : array-like
+        Training input samples.
+
+    y : array-like
+        Target values.
+    """
+    file_location = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'property_inspection.zip')
+    z = ZipFile(file_location)
     data = pd.read_csv(z.open('train.csv'))
     data = data.set_index('Id')
 
