@@ -10,7 +10,55 @@ from ..visualization import visualize_correlations
 
 def train_stacked_ensemble(X, y, X_test, models, metric, transforms, n_folds):
     """
-    Creates a stacked ensemble of many models together.
+    Creates an stacked ensemble of many models together.  This function performs several steps.  First, it uses the
+    model definitions and other parameters provided as input to do K-fold cross-validation on the data set, training
+    and evaluating a stacked model on every iteration.  Second, it fits a stacked model to the full data set using the
+    out-of-sample predictions created during cross-validation. Finally, it uses the stacker model to generate
+    predictions on the test set.
+
+    Stacking is an ensemble procedure that fits a second-level model using predictions from a set of first-level
+    models as the input.  For each first-level model, perform cross-validation to generate out-of-sample (OOS)
+    predictions for the whole data set (this is important as we can't use predictions on training data, otherwise
+    the stacker will severely overfit).  Once this is complete, Use the OOS predictions as input to the second-level
+    model.  Fit the second-level on these predictions and then use it to make predictions on some hold-out data set
+    that was not used in cross-validation earlier.
+
+    Parameters
+    ----------
+    X : array-like
+        Training input samples.
+
+    y : array-like
+        Target values.
+
+    X_test : array-like
+        Test input samples.
+
+    models : array-like
+        Model definitions for each of the models in the ensemble.
+
+    metric : {'accuracy', 'f1', 'log_loss', 'mean_absolute_error', 'mean_squared_error', 'r2', 'roc_auc'}
+        Scoring metric.
+
+    transforms : array-like
+        List of transforms to apply to the input samples.
+
+    n_folds : int
+        Number of cross-validation folds to perform.
+
+    Returns
+    ----------
+    y_models : array-like
+        Out-of-sample predictions from each model during cross-validation.
+
+    y_true : array-like
+        Actual labels for the sample data (ordering lines up with OOS predictions).
+
+    y_models_test : array-like
+        Test predictions from each individual model in the ensemble.
+
+    y_pred_test : array-like
+        Ensemble test predictions.
     """
     t0 = time.time()
     stacker = Ridge()
