@@ -10,6 +10,31 @@ from ..utils import fit_transforms, apply_transforms, score
 def cross_validate(X, y, model, metric, transforms, n_folds):
     """
     Performs cross-validation to estimate the true performance of the model.
+
+    Parameters
+    ----------
+    X : array-like
+        Training input samples.
+
+    y : array-like
+        Target values.
+
+    model : object
+        An object in memory that represents a model definition.
+
+    metric : {'accuracy', 'f1', 'log_loss', 'mean_absolute_error', 'mean_squared_error', 'r2', 'roc_auc'}
+        Scoring metric.
+
+    transforms : array-like
+        List of objects with a transform function that accepts one parameter.
+
+    n_folds : int
+        Number of cross-validation folds.
+
+    Returns
+    ----------
+    cross_validation_score : float
+        An aggregated evaluation of the performance of the model on validation data from each fold.
     """
     t0 = time.time()
     y_train_scores = []
@@ -46,14 +71,59 @@ def cross_validate(X, y, model, metric, transforms, n_folds):
 
 
 def sequence_cross_validate(X, y, model, metric, transforms, n_folds, strategy='traditional',
-                            window_type='cumulative', min_window=0, forecast_range=1, plot=False):
+                            window_type='fixed', min_window=0, forecast_range=1, plot=False):
     """
-    Performs time series cross-validation to estimate the true performance of the model.
+    Performs time series cross-validation to estimate the true performance of the model.  Normal
+    cross-validation can't be applied to time series data since it can't be randomly shuffled.  This
+    function uses a sliding window approach to train on a specific time period and then evaluate on a
+    slice of time immediately proceeding the training window.
+
+    Parameters
+    ----------
+    X : array-like
+        Training input samples.
+
+    y : array-like
+        Target values.
+
+    model : object
+        An object in memory that represents a model definition.
+
+    metric : {'accuracy', 'f1', 'log_loss', 'mean_absolute_error', 'mean_squared_error', 'r2', 'roc_auc'}
+        Scoring metric.
+
+    transforms : array-like
+        List of objects with a transform function that accepts one parameter.
+
+    n_folds : int
+        Number of cross-validation folds.
+
+    strategy : {'traditional', 'walk_forward'}, optional, default 'traditional'
+        Determines how to construct the cross-validation folds.  Using "traditional" will divide the data set
+        up evenly.  Using "walk forward" will train and evaluate iteratively on every record (overrides the
+        n_folds parameter).
+
+    window_type : {'fixed', 'cumulative'}, optional, default 'fixed'
+        Determines if the training window is a fixed size or expands as the folds progress through the data set.
+
+    min_window : int, optional, default 0
+        The minimum fold size allowable.
+
+    forecast_range : int, optional, default 1
+        Size of the validation set for each fold.
+
+    plot : boolean, optional, default False
+        Plot the forecast performance for each fold.
+
+    Returns
+    ----------
+    cross_validation_score : float
+        An aggregated evaluation of the performance of the model on validation data from each fold.
     """
     scores = []
     train_count = len(X)
 
-    if strategy == 'walk-forward':
+    if strategy == 'walk_forward':
         n_folds = train_count - min_window - forecast_range
         fold_size = 1
     else:
@@ -89,13 +159,36 @@ def sequence_cross_validate(X, y, model, metric, transforms, n_folds, strategy='
     t1 = time.time()
     print('Cross-validation completed in {0:3f} s.'.format(t1 - t0))
 
-    return np.mean(scores)
+    cross_validation_score = np.mean(scores)
+    print('Cross-validation score = '), cross_validation_score
+
+    return cross_validation_score
 
 
 def plot_learning_curve(X, y, model, metric, transforms, n_folds):
     """
-    Plots a learning curve showing model performance against both training and
-    validation data sets as a function of the number of training samples.
+    Plots a learning curve showing model performance against both training and validation data sets
+    as a function of the number of training samples.
+
+    Parameters
+    ----------
+    X : array-like
+        Training input samples.
+
+    y : array-like
+        Target values.
+
+    model : object
+        An object in memory that represents a model definition.
+
+    metric : {'accuracy', 'f1', 'log_loss', 'mean_absolute_error', 'mean_squared_error', 'r2', 'roc_auc'}
+        Scoring metric.
+
+    transforms : array-like
+        List of objects with a transform function that accepts one parameter.
+
+    n_folds : int
+        Number of cross-validation folds.
     """
     transforms = fit_transforms(X, y, transforms)
     X = apply_transforms(X, transforms)
