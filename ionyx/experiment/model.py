@@ -4,10 +4,53 @@ from sklearn.cross_validation import train_test_split
 from ..utils import fit_transforms, apply_transforms, predict_score
 
 
-def train_model(X, y, model, package, metric, transforms, eval=False, plot_eval_history=False,
+def train_model(X, y, model, library, metric, transforms, eval=False, plot_eval_history=False,
                 early_stopping=False, early_stopping_rounds=None):
     """
-    Trains a new model using the training data.
+    Trains a new model using the provided training data.
+
+    Parameters
+    ----------
+    X : array-like
+        Training input samples.
+
+    y : array-like
+        Target values.
+
+    model : object
+        An object in memory that represents a model definition.
+
+    library : {'sklearn', 'xgboost', 'keras'}
+        The source library of the model.  Supports more than just scikit-learn models, however
+        since model APIs can vary there may be different features/capabilities available depending
+        on which library is used.
+
+    metric : {'accuracy', 'f1', 'log_loss', 'mean_absolute_error', 'mean_squared_error', 'r2', 'roc_auc'}
+        Scoring metric.
+
+    transforms : array-like
+        List of objects with a transform function that accepts one parameter.
+
+    eval : boolean, optional, default False
+        Evaluate model on a hold-out set during training.
+
+    plot_eval_history : boolean, optional, default False
+        Plot model performance as a function of training time.  Eval must be enabled.
+
+    early_stopping : boolean, optional, default False
+        Stop training the model when performance on a validation set begins to drop. Eval must be enabled.
+
+    early_stopping_rounds : int, optional, default None
+        Number of training iterations to allow before stopping training due to performance on a validation set.
+        Eval and early_stopping must be enabled.
+
+    Returns
+    ----------
+    model : object
+        An object in memory that represents a fitted model.
+
+    training_history : array-like
+        Model performance on a validation set after each training epoch.  Only available for certain models.
     """
     t0 = time.time()
     X_train = None
@@ -23,7 +66,7 @@ def train_model(X, y, model, package, metric, transforms, eval=False, plot_eval_
         X_eval = apply_transforms(X_eval, transforms)
 
         if early_stopping:
-            if package == 'xgboost':
+            if library == 'xgboost':
                 model.fit(X_train, y_train, eval_set=[(X_eval, y_eval)], eval_metric='rmse',
                           early_stopping_rounds=early_stopping_rounds)
                 training_history = model.eval_results
@@ -31,11 +74,11 @@ def train_model(X, y, model, package, metric, transforms, eval=False, plot_eval_
             else:
                 raise Exception('Early stopping not supported.')
         else:
-            if package == 'xgboost':
+            if library == 'xgboost':
                 model.fit(X_train, y_train, eval_set=[(X_eval, y_eval)], eval_metric='rmse')
                 training_history = model.eval_results
                 print('TODO')
-            elif package == 'keras':
+            elif library == 'keras':
                 model.validation_data = (X_eval, y_eval)
                 training_history = model.fit(X_train, y_train)
                 print('Min eval loss ='), min(training_history.history['val_loss'])
@@ -45,7 +88,7 @@ def train_model(X, y, model, package, metric, transforms, eval=False, plot_eval_
     else:
         transforms = fit_transforms(X, y, transforms)
         X = apply_transforms(X, transforms)
-        if package == 'keras':
+        if library == 'keras':
             training_history = model.fit(X, y)
         else:
             model.fit(X, y)
@@ -66,9 +109,9 @@ def train_model(X, y, model, package, metric, transforms, eval=False, plot_eval_
         print('Evaluation score ='), eval_score
 
         if plot_eval_history:
-            if package == 'xgboost':
+            if library == 'xgboost':
                 print('TODO')
-            elif package == 'keras':
+            elif library == 'keras':
                 print('TODO')
             else:
                 raise Exception('Eval history not supported.')
