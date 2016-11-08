@@ -10,7 +10,35 @@ def visualize_variable_relationships(data, quantitative_vars, category_vars=None
                                      pair_viz_type='scatter', factor_viz_type='strip', pair_diag_type='kde',
                                      fig_size=16):
     """
-    Generates plots showing the relationship between several variables.
+    Generates plots showing the relationship between several variables.  The combination of plots generated
+    depends on the number of quantitative and discrete (categorical or ordinal) variables to be analyzed.
+    Plots are rendered using the seaborn statistical visualization package.
+
+    Parameters
+    ----------
+    data : array-like
+        Pandas data frame containing the entire data set.
+
+    quantitative_vars : array-like
+        List of variable names to analyze quantitatively.
+
+    category_vars : array-like, optional, default None
+        List of variable names to analyze discretely.
+
+    joint_viz_type : {'scatter', 'reg', 'resid', 'kde', 'hex'}, optional, default 'scatter'
+        Method to use to display two quantitative variables together.
+
+    pair_viz_type : {'scatter', 'reg'}, optional, default 'scatter'
+        Method to use to display more than two quantitative variables together.
+
+    factor_viz_type : {'point', 'bar', 'count', 'box', 'violin', 'strip'}, optional, default 'strip'
+        Method to use to display one quantitative variable along with categorical variables.
+
+    pair_diag_type : {'hist', 'kde'}, optional, default 'kde'
+        Display type for the diagonal plots in a pair plot.
+
+    fig_size : int, optional, default 16
+        Size of the plot.
     """
     if quantitative_vars is None or len(quantitative_vars) == 0:
         raise Exception('Must provide at least one quantitative variable.')
@@ -69,6 +97,23 @@ def visualize_variable_relationships(data, quantitative_vars, category_vars=None
 def visualize_feature_distributions(data, viz_type='hist', bins=None, grid_size=4, fig_size=20):
     """
     Generates feature distribution plots (histogram or kde) for each feature.
+
+    Parameters
+    ----------
+    data : array-like
+        Pandas data frame containing the entire data set.
+
+    viz_type : {'hist', 'kde', 'both'}, optional, default 'hist'
+        Type of plot used for visualization.
+
+    bins : int, optional, default None
+        Number of bins to use in histogram plots.
+
+    grid_size : int, optional, default 4
+        Number of vertical/horizontal plots to display in a single window.
+
+    fig_size : int, optional, default 20
+        Size of the plot.
     """
     if viz_type == 'hist':
         hist = True
@@ -105,6 +150,17 @@ def visualize_feature_distributions(data, viz_type='hist', bins=None, grid_size=
 def visualize_correlations(data, annotate=False, fig_size=16):
     """
     Generates a correlation matrix heat map.
+
+    Parameters
+    ----------
+    data : array-like
+        Pandas data frame containing the entire data set.
+
+    annotate : boolean, optional, default False
+        Annotate the heat map with labels.
+
+    fig_size : int, optional, default 20
+        Size of the plot.
     """
     corr = data.corr()
 
@@ -124,6 +180,26 @@ def visualize_correlations(data, annotate=False, fig_size=16):
 def visualize_sequential_relationships(data, time='index', smooth_method=None, window=1, grid_size=4, fig_size=20):
     """
     Generates line plots to visualize sequential data.  Assumes the data frame index is time series.
+
+    Parameters
+    ----------
+    data : array-like
+        Pandas data frame containing the entire data set.
+
+    time : string, optional, default 'index'
+        Datetime input column to use for visualization.
+
+    smooth_method : {'mean', 'var', 'skew', 'kurt'}, optional, default None
+        Apply a function to the time series to smooth out variations.
+
+    window : int, optional, default 1
+        Size of the moving window used to calculate the smoothing function.
+
+    grid_size : int, optional, default 4
+        Number of vertical/horizontal plots to display in a single window.
+
+    fig_size : int, optional, default 20
+        Size of the plot.
     """
     # replace NaN values with 0 to prevent exceptions in the lower level API calls
     data = data.fillna(0)
@@ -160,6 +236,30 @@ def visualize_sequential_relationships(data, time='index', smooth_method=None, w
 def visualize_transforms(X, transforms, y=None, model_type=None, n_components=2, scatter_size=50, fig_size=16):
     """
     Generates plots to visualize the data transformed by a linear or manifold algorithm.
+
+    Parameters
+    ----------
+    X : array-like
+        Training input samples.
+
+    transforms : array-like
+        List of objects with a transform function that accepts one parameter.
+
+    y : array-like, optional, default None
+        Target values.  Used to color the input values.
+
+    model_type : {'classification', 'regression', None}, optional, default None
+        Specifies if the data set is being used for classification or regression.  If one of these
+        is specified, the plots will color input values using the provided labels.
+
+    n_components : int, optional, default 2
+        Number of components of the transformed data set to visualize.
+
+    scatter_size : int, optional, default 50
+        Size of the points on the scatter plot.
+
+    fig_size : int, optional, default 20
+        Size of the plot.
     """
     transforms = fit_transforms(X, y, transforms)
     X = apply_transforms(X, transforms)
@@ -194,7 +294,23 @@ def visualize_transforms(X, transforms, y=None, model_type=None, n_components=2,
 
 def visualize_feature_importance(feature_importance, feature_names, n_features=30, fig_size=16):
     """
-    Generates a feature importance plot.
+    Generates a feature importance plot.  Feature importance usually comes from information-theoretic
+    algorithms such as decision trees or gradient boosting.  This function will take the output from
+    those algorithms and generate a plot that visually displays the relative impact of each feature.
+
+    Parameters
+    ----------
+    feature_importance : array-like
+        List of feature weights.
+
+    feature_names : array-like
+        List of feature names.  Must be ordered identically to feature_importance.
+
+    n_features : int, optional, default 30
+        Number of features to display on the plot.
+
+    fig_size : int, optional, default 20
+        Size of the plot.
     """
     feature_importance = 100.0 * (feature_importance / feature_importance.max())
     importance = feature_importance[0:n_features] if len(feature_names) > n_features else feature_importance
