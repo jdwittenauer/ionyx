@@ -34,6 +34,29 @@ def create_class(import_path, module_name, class_name, *params):
     return instance
 
 
+def print_status_message(message, verbose=False, logger=None):
+    """
+    Wrapper function that encapsulates the logic of figuring out how to handle status messages.
+
+    Parameters
+    ----------
+    message : string
+        Generic text message.
+
+    verbose : boolean, optional, default False
+        Prints status messages to the console if enabled.
+
+    logger : object, optional, default None
+        Instance of a class that can log messages to an output file.
+    """
+    if verbose:
+        now = datetime.datetime.now().replace(microsecond=0).isoformat(' ')
+        if logger is not None:
+            logger.write('(' + now + ') ' + message)
+        else:
+            print('(' + now + ') ' + message)
+
+
 def load_csv_data(filename, dtype=None, index=None, convert_to_date=False):
     """
     Load a csv data file into a data frame.  This function wraps Pandas' read_csv function with logic to set the

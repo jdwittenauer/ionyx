@@ -1,6 +1,7 @@
 from .category_encoder import CategoryEncoder
 from .category_to_numeric import CategoryToNumeric
 from .logger import Logger
+from .utils import print_status_message
 from .utils import load_csv_data
 from .utils import load_model
 from .utils import save_model
