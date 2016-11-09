@@ -4,11 +4,11 @@ import pandas as pd
 from sklearn.cross_validation import KFold
 from sklearn.linear_model import Ridge
 
-from ..utils import fit_transforms, apply_transforms, score
+from ..utils import print_status_message, fit_transforms, apply_transforms, score
 from ..visualization import visualize_correlations
 
 
-def train_stacked_ensemble(X, y, X_test, models, metric, transforms, n_folds):
+def train_stacked_ensemble(X, y, X_test, models, metric, transforms, n_folds, verbose=False, logger=None):
     """
     Creates an stacked ensemble of many models together.  This function performs several steps.  First, it uses the
     model definitions and other parameters provided as input to do K-fold cross-validation on the data set, training
@@ -46,6 +46,12 @@ def train_stacked_ensemble(X, y, X_test, models, metric, transforms, n_folds):
     n_folds : int
         Number of cross-validation folds to perform.
 
+    verbose : boolean, optional, default False
+        Prints status messages to the console if enabled.
+
+    logger : object, optional, default None
+        Instance of a class that can log messages to an output file.
+
     Returns
     ----------
     y_models : array-like
@@ -73,7 +79,7 @@ def train_stacked_ensemble(X, y, X_test, models, metric, transforms, n_folds):
 
     folds = list(KFold(n_records, n_folds=n_folds, shuffle=True, random_state=1337))
     for i, (train_out_index, eval_out_index) in enumerate(folds):
-        print('Starting fold {0}...'.format(i + 1))
+        print_status_message('Starting fold {0}...'.format(str(i + 1)), verbose, logger)
         X_out_train = X[train_out_index]
         y_out_train = y[train_out_index]
         X_out_eval = X[eval_out_index]
@@ -81,7 +87,7 @@ def train_stacked_ensemble(X, y, X_test, models, metric, transforms, n_folds):
 
         y_oos = np.zeros((n_records, n_models))
 
-        print('Generating out-of-sample predictions for first-level models...')
+        print_status_message('Generating out-of-sample predictions for first-level models...', verbose, logger)
         for j, (train_index, eval_index) in enumerate(folds):
             if j != i:
                 X_train = X[train_index]
@@ -103,10 +109,10 @@ def train_stacked_ensemble(X, y, X_test, models, metric, transforms, n_folds):
                 for k, model in enumerate(models):
                     y_oos[eval_index, k] = model.predict(X_eval).ravel()
 
-        print('Fitting second-level model...')
+        print_status_message('Fitting second-level model...', verbose, logger)
         stacker.fit(y_oos[train_out_index], y_out_train)
 
-        print('Re-fitting first-level models...')
+        print_status_message('Re-fitting first-level models...', verbose, logger)
         transforms = fit_transforms(X_out_train, y_out_train, transforms)
         X_out_train = apply_transforms(X_out_train, transforms)
         X_out_eval = apply_transforms(X_out_eval, transforms)
@@ -119,7 +125,7 @@ def train_stacked_ensemble(X, y, X_test, models, metric, transforms, n_folds):
             else:
                 model.fit(X_out_train, y_out_train, batch_size=128, nb_epoch=1000, verbose=0, shuffle=True)
 
-        print('Generating predictions and scoring...')
+        print_status_message('Generating predictions and scoring...', verbose, logger)
         training_predictions = np.zeros((X_out_train.shape[0], n_models))
 
         for k, model in enumerate(models):
@@ -135,18 +141,24 @@ def train_stacked_ensemble(X, y, X_test, models, metric, transforms, n_folds):
         y_true[eval_out_index] = y_out_eval
 
     t1 = time.time()
-    print('Ensemble training completed in {0:3f} s.'.format(t1 - t0))
+    print_status_message('Ensemble training completed in {0:3f} s.'.format(str(t1 - t0)), verbose, logger)
 
     for k, model in enumerate(models):
-        print('Model ' + str(k) + ' average training score ='), model_train_scores[:, k].sum(axis=0) / n_folds
-        print('Model ' + str(k) + ' eval score ='), score(y_true, y_models[:, k], metric)
-    print('Ensemble average training score ='), stacker_train_scores.sum() / n_folds
-    print('Ensemble eval score ='), score(y_true, y_pred, metric)
+        avg_train_score = model_train_scores[:, k].sum(axis=0) / n_folds
+        eval_score = score(y_true, y_models[:, k], metric)
+        print_status_message('Model {0} average training score = {1}'
+                             .format(str(k), str(avg_train_score)), verbose, logger)
+        print_status_message('Model {0} eval score = {1}'
+                             .format(str(k), str(eval_score)), verbose, logger)
+    print_status_message('Ensemble average training score = {0}'
+                         .format(str(stacker_train_scores.sum() / n_folds)), verbose, logger)
+    print_status_message('Ensemble eval score = {0}'
+                         .format(str(score(y_true, y_pred, metric))), verbose, logger)
 
     df = pd.DataFrame(y_models, columns=['Model ' + str(i) for i in range(n_models)])
     visualize_correlations(df)
 
-    print('Fitting models on full data set...')
+    print_status_message('Fitting models on full data set...', verbose, logger)
     n_test_records = X_test.shape[0]
     y_models_test = np.zeros((n_test_records, n_models))
 
@@ -164,11 +176,11 @@ def train_stacked_ensemble(X, y, X_test, models, metric, transforms, n_folds):
 
     stacker.fit(y_models, y_true)
 
-    print('Generating test data predictions...')
+    print_status_message('Generating test data predictions...', verbose, logger)
     for k, model in enumerate(models):
         y_models_test[:, k] = model.predict(X_test).ravel()
 
     y_pred_test = stacker.predict(y_models_test)
 
-    print('Ensemble complete.')
+    print_status_message('Ensemble complete.', verbose, logger)
     return y_models, y_true, y_models_test, y_pred_test
