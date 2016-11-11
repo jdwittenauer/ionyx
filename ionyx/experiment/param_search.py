@@ -2,10 +2,11 @@ import time
 from sklearn.cross_validation import train_test_split
 from sklearn.grid_search import ParameterGrid
 
-from ..utils import fit_transforms, apply_transforms, predict_score
+from ..utils import print_status_message, fit_transforms, apply_transforms, predict_score
 
 
-def parameter_grid_search(X, y, model, metric, transform_grid, param_grid, test_split_size=0.2):
+def parameter_grid_search(X, y, model, metric, transform_grid, param_grid,
+                          test_split_size=0.2, verbose=False, logger=None):
     """
     Performs an exhaustive search over the specified model parameters.
 
@@ -32,16 +33,22 @@ def parameter_grid_search(X, y, model, metric, transform_grid, param_grid, test_
 
     test_split_size : float, optional, default 0.2
         Proportion of the data to hold out for evaluation (range 0 to 1).
+
+    verbose : boolean, optional, default False
+        Prints status messages to the console if enabled.
+
+    logger : object, optional, default None
+        Instance of a class that can log messages to an output file.
     """
-    print('Beginning parameter grid search...')
+    print_status_message('Beginning parameter grid search...', verbose, logger)
     t0 = time.time()
     params_list = list(ParameterGrid(param_grid))
     X_train, X_eval, y_train, y_eval = train_test_split(X, y, test_size=test_split_size)
 
     for transforms in transform_grid:
-        print('Transforms = {0}'.format(transforms))
-        print('')
-        print('')
+        print_status_message('Transforms = {0}'.format(str(transforms)), verbose, logger)
+        print_status_message('', verbose, logger)
+        print_status_message('', verbose, logger)
         transforms = fit_transforms(X_train, y_train, transforms)
         X_train = apply_transforms(X_train, transforms)
         X_eval = apply_transforms(X_eval, transforms)
@@ -52,19 +59,19 @@ def parameter_grid_search(X, y, model, metric, transform_grid, param_grid, test_
                 print(param + " = " + str(value))
                 setattr(model, param, value)
 
-            print('Fitting model...')
+            print_status_message('Fitting model...', verbose, logger)
             model.fit(X_train, y_train)
 
             train_score = predict_score(X_train, y_train, model, metric)
-            print('Training score ='), train_score
+            print_status_message('Training score = {0}'.format(str(train_score)), verbose, logger)
 
             eval_score = predict_score(X_eval, y_eval, model, metric)
-            print('Evaluation score ='), eval_score
+            print_status_message('Evaluation score = {0}'.format(str(eval_score)), verbose, logger)
 
             tsub1 = time.time()
-            print('Model trained in {0:3f} s.'.format(tsub0 - tsub1))
-            print('')
-            print('')
+            print_status_message('Model trained in {0:3f} s.'.format(str(tsub0 - tsub1)), verbose, logger)
+            print_status_message('', verbose, logger)
+            print_status_message('', verbose, logger)
 
     t1 = time.time()
-    print('Grid search complete in {0:3f} s.'.format(t0 - t1))
+    print_status_message('Grid search complete in {0:3f} s.'.format(str(t0 - t1)), verbose, logger)

@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 from sklearn.cross_validation import KFold
 from sklearn.learning_curve import learning_curve
 
-from ..utils import fit_transforms, apply_transforms, score
+from ..utils import print_status_message, fit_transforms, apply_transforms, score
 
 
-def cross_validate(X, y, model, metric, transforms, n_folds):
+def cross_validate(X, y, model, metric, transforms, n_folds, verbose=False, logger=None):
     """
     Performs cross-validation to estimate the true performance of the model.
 
@@ -31,6 +31,12 @@ def cross_validate(X, y, model, metric, transforms, n_folds):
     n_folds : int
         Number of cross-validation folds.
 
+    verbose : boolean, optional, default False
+        Prints status messages to the console if enabled.
+
+    logger : object, optional, default None
+        Instance of a class that can log messages to an output file.
+
     Returns
     ----------
     cross_validation_score : float
@@ -43,7 +49,7 @@ def cross_validate(X, y, model, metric, transforms, n_folds):
 
     folds = list(KFold(y.shape[0], n_folds=n_folds, shuffle=True, random_state=1337))
     for i, (train_index, eval_index) in enumerate(folds):
-        print('Starting fold {0}...'.format(i + 1))
+        print_status_message('Starting fold {0}...'.format(str(i + 1)), verbose, logger)
         X_train = X[train_index]
         y_train = y[train_index]
         X_eval = X[eval_index]
@@ -60,18 +66,19 @@ def cross_validate(X, y, model, metric, transforms, n_folds):
         y_true = np.append(y_true, y_eval)
 
     t1 = time.time()
-    print('Cross-validation completed in {0:3f} s.'.format(t1 - t0))
+    print_status_message('Cross-validation completed in {0:3f} s.'.format(str(t1 - t0)), verbose, logger)
 
-    print('Average training score = '), sum(y_train_scores) / len(y_train_scores)
+    avg_train_score = sum(y_train_scores) / len(y_train_scores)
+    print_status_message('Average training score = {0}'.format(str(avg_train_score)), verbose, logger)
 
-    cross_validation_score = score(y_true, y_pred, metric)
-    print('Cross-validation score = '), cross_validation_score
+    xval_score = score(y_true, y_pred, metric)
+    print_status_message('Cross-validation score = {0}'.format(str(xval_score)), verbose, logger)
 
-    return cross_validation_score
+    return xval_score
 
 
-def sequence_cross_validate(X, y, model, metric, transforms, n_folds, strategy='traditional',
-                            window_type='fixed', min_window=0, forecast_range=1, plot=False):
+def sequence_cross_validate(X, y, model, metric, transforms, n_folds, strategy='traditional', window_type='fixed',
+                            min_window=0, forecast_range=1, plot=False, verbose=False, logger=None):
     """
     Performs time series cross-validation to estimate the true performance of the model.  Normal
     cross-validation can't be applied to time series data since it can't be randomly shuffled.  This
@@ -115,6 +122,12 @@ def sequence_cross_validate(X, y, model, metric, transforms, n_folds, strategy='
     plot : boolean, optional, default False
         Plot the forecast performance for each fold.
 
+    verbose : boolean, optional, default False
+        Prints status messages to the console if enabled.
+
+    logger : object, optional, default None
+        Instance of a class that can log messages to an output file.
+
     Returns
     ----------
     cross_validation_score : float
@@ -157,15 +170,15 @@ def sequence_cross_validate(X, y, model, metric, transforms, n_folds, strategy='
             fig.tight_layout()
 
     t1 = time.time()
-    print('Cross-validation completed in {0:3f} s.'.format(t1 - t0))
+    print_status_message('Cross-validation completed in {0:3f} s.'.format(str(t1 - t0)), verbose, logger)
 
-    cross_validation_score = np.mean(scores)
-    print('Cross-validation score = '), cross_validation_score
+    xval_score = np.mean(scores)
+    print_status_message('Cross-validation score = {0}'.format(str(xval_score)), verbose, logger)
 
-    return cross_validation_score
+    return xval_score
 
 
-def plot_learning_curve(X, y, model, metric, transforms, n_folds):
+def plot_learning_curve(X, y, model, metric, transforms, n_folds, verbose=False, logger=None):
     """
     Plots a learning curve showing model performance against both training and validation data sets
     as a function of the number of training samples.
@@ -189,6 +202,12 @@ def plot_learning_curve(X, y, model, metric, transforms, n_folds):
 
     n_folds : int
         Number of cross-validation folds.
+
+    verbose : boolean, optional, default False
+        Prints status messages to the console if enabled.
+
+    logger : object, optional, default None
+        Instance of a class that can log messages to an output file.
     """
     transforms = fit_transforms(X, y, transforms)
     X = apply_transforms(X, transforms)
@@ -213,4 +232,4 @@ def plot_learning_curve(X, y, model, metric, transforms, n_folds):
     ax.legend(loc='best')
     fig.tight_layout()
     t1 = time.time()
-    print('Learning curve generated in {0:3f} s.'.format(t1 - t0))
+    print_status_message('Learning curve generated in {0:3f} s.'.format(str(t1 - t0)), verbose, logger)

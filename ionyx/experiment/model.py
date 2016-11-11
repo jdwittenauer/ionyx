@@ -1,11 +1,11 @@
 import time
 from sklearn.cross_validation import train_test_split
 
-from ..utils import fit_transforms, apply_transforms, predict_score
+from ..utils import print_status_message, fit_transforms, apply_transforms, predict_score
 
 
 def train_model(X, y, model, library, metric, transforms, eval=False, plot_eval_history=False,
-                early_stopping=False, early_stopping_rounds=None):
+                early_stopping=False, early_stopping_rounds=None, verbose=False, logger=None):
     """
     Trains a new model using the provided training data.
 
@@ -44,6 +44,12 @@ def train_model(X, y, model, library, metric, transforms, eval=False, plot_eval_
         Number of training iterations to allow before stopping training due to performance on a validation set.
         Eval and early_stopping must be enabled.
 
+    verbose : boolean, optional, default False
+        Prints status messages to the console if enabled.
+
+    logger : object, optional, default None
+        Instance of a class that can log messages to an output file.
+
     Returns
     ----------
     model : object
@@ -70,7 +76,7 @@ def train_model(X, y, model, library, metric, transforms, eval=False, plot_eval_
                 model.fit(X_train, y_train, eval_set=[(X_eval, y_eval)], eval_metric='rmse',
                           early_stopping_rounds=early_stopping_rounds)
                 training_history = model.eval_results
-                print('Best iteration found ='), model.best_iteration
+                print_status_message('Best iteration found = {0}'.format(str(model.best_iteration)), verbose, logger)
             else:
                 raise Exception('Early stopping not supported.')
         else:
@@ -81,8 +87,10 @@ def train_model(X, y, model, library, metric, transforms, eval=False, plot_eval_
             elif library == 'keras':
                 model.validation_data = (X_eval, y_eval)
                 training_history = model.fit(X_train, y_train)
-                print('Min eval loss ='), min(training_history.history['val_loss'])
-                print('Min eval epoch ='), min(enumerate(training_history.history['loss']), key=lambda x: x[1])[0] + 1
+                min_eval_loss = min(training_history.history['val_loss'])
+                min_eval_epoch = min(enumerate(training_history.history['loss']), key=lambda x: x[1])[0] + 1
+                print_status_message('Min eval loss = {0}'.format(str(min_eval_loss)), verbose, logger)
+                print_status_message('Min eval epoch = {0}'.format(str(min_eval_epoch)), verbose, logger)
             else:
                 raise Exception('Model evaluation not supported.')
     else:
@@ -94,19 +102,19 @@ def train_model(X, y, model, library, metric, transforms, eval=False, plot_eval_
             model.fit(X, y)
 
     t1 = time.time()
-    print('Model trained in {0:3f} s.'.format(t1 - t0))
+    print_status_message('Model trained in {0:3f} s.'.format(str(t1 - t0)), verbose, logger)
 
-    print('Model hyper-parameters:')
-    print(model.get_params())
+    print_status_message('Model hyper-parameters:', verbose, logger)
+    print_status_message(str(model.get_params()), verbose, logger)
 
     if eval:
-        print('Calculating training score...')
+        print_status_message('Calculating training score...', verbose, logger)
         train_score = predict_score(X_train, y_train, model, metric)
-        print('Training score ='), train_score
+        print_status_message('Training score = {0}'.format(str(train_score)), verbose, logger)
 
-        print('Calculating evaluation score...')
+        print_status_message('Calculating evaluation score...', verbose, logger)
         eval_score = predict_score(X_eval, y_eval, model, metric)
-        print('Evaluation score ='), eval_score
+        print_status_message('Evaluation score = {0}'.format(str(eval_score)), verbose, logger)
 
         if plot_eval_history:
             if library == 'xgboost':
@@ -116,8 +124,8 @@ def train_model(X, y, model, library, metric, transforms, eval=False, plot_eval_
             else:
                 raise Exception('Eval history not supported.')
     else:
-        print('Calculating training score...')
+        print_status_message('Calculating training score...', verbose, logger)
         train_score = predict_score(X, y, model, metric)
-        print('Training score ='), train_score
+        print_status_message('Training score = {0}'.format(str(train_score)), verbose, logger)
 
     return model, training_history
