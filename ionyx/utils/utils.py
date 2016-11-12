@@ -1,3 +1,4 @@
+import datetime
 import pickle
 import pandas as pd
 from sklearn.metrics import *
@@ -57,10 +58,10 @@ def print_status_message(message, verbose=False, logger=None):
             print('(' + now + ') ' + message)
 
 
-def load_csv_data(filename, dtype=None, index=None, convert_to_date=False):
+def load_csv_data(filename, dtype=None, index=None, convert_to_date=False, verbose=False, logger=None):
     """
-    Load a csv data file into a data frame.  This function wraps Pandas' read_csv function with logic to set the
-    index for the data frame and convert fields to date types if necessary.
+    Load a csv data file into a data frame.  This function wraps the Pandas read_csv function with logic
+    to set the index for the data frame and convert fields to date types if necessary.
 
     Parameters
     ----------
@@ -75,6 +76,12 @@ def load_csv_data(filename, dtype=None, index=None, convert_to_date=False):
 
     convert_to_date : boolean, optional, default False
         Boolean indicating if the index consists of date fields.
+
+    verbose : boolean, optional, default False
+        Prints status messages to the console if enabled.
+
+    logger : object, optional, default None
+        Instance of a class that can log messages to an output file.
 
     Returns
     ----------
@@ -93,12 +100,60 @@ def load_csv_data(filename, dtype=None, index=None, convert_to_date=False):
 
         data = data.set_index(index)
 
-    print('Data file ' + filename + ' loaded successfully.')
+    print_status_message('Data file {0} loaded successfully.'.format(str(filename)), verbose, logger)
 
     return data
 
 
-def load_model(filename):
+def load_sql_data(engine, table=None, query=None, index=None, params=None,
+                  date_columns=None, verbose=False, logger=None):
+    """
+    Reads SQL data using the specified table or query and returns a data frame with the results.  This function
+    wraps Pandas' read_sql function with logic to allow for a table name to be specified instead of a query.
+
+    Parameters
+    ----------
+    engine : object
+        A SQLAlchemy engine with a connection to the database to read from.
+
+    table : string, optional, default None
+        Name of the table to read from if reading entire table contents.  Specify either table or query parameter.
+
+    query : string, optional, default None
+        SQL query to run against the database.  Specify either table or query parameter.
+
+    index : string or array-like, optional, default None
+        Specify either the column or list of columns to set as the index of the data frame.
+
+    params: array-like, optional, default None
+        List of input parameters for the database to evaluate with the SQL query.
+
+    date_columns : array-like, optional, default None
+        List of column names to parse as dates in the data frame.
+
+    verbose : boolean, optional, default False
+        Prints status messages to the console if enabled.
+
+    logger : object, optional, default None
+        Instance of a class that can log messages to an output file.
+
+    Returns
+    ----------
+    data : array-like
+        Data frame containing the results of the query.
+    """
+    if query is not None:
+        data = pd.read_sql(query, engine, index_col=index, params=params, parse_dates=date_columns)
+    else:
+        data = pd.read_sql('SELECT * FROM ' + table, engine, index_col=index,
+                           params=params, parse_dates=date_columns)
+
+    print_status_message('SQL query completed successfully.', verbose, logger)
+
+    return data
+
+
+def load_model(filename, verbose=False, logger=None):
     """
     Load a previously trained model from disk.
 
@@ -106,6 +161,12 @@ def load_model(filename):
     ----------
     filename : string
         Location of the file to read.
+
+    verbose : boolean, optional, default False
+        Prints status messages to the console if enabled.
+
+    logger : object, optional, default None
+        Instance of a class that can log messages to an output file.
 
     Returns
     ----------
@@ -116,10 +177,12 @@ def load_model(filename):
     model = pickle.load(model_file)
     model_file.close()
 
+    print_status_message('Loaded model from {0} into memory.'.format(str(filename)), verbose, logger)
+
     return model
 
 
-def save_model(model, filename):
+def save_model(model, filename, verbose=False, logger=None):
     """
     Persist a trained model to disk.
 
@@ -130,13 +193,21 @@ def save_model(model, filename):
 
     filename : string
         Location of the file to write.
+
+    verbose : boolean, optional, default False
+        Prints status messages to the console if enabled.
+
+    logger : object, optional, default None
+        Instance of a class that can log messages to an output file.
     """
     model_file = open(filename, 'wb')
     pickle.dump(model, model_file)
     model_file.close()
 
+    print_status_message('Saved model to disk at {0}.'.format(str(filename)), verbose, logger)
 
-def fit_transforms(X, y, transforms):
+
+def fit_transforms(X, y, transforms, verbose=False, logger=None):
     """
     Fits new transformations from a data set.
 
@@ -151,20 +222,29 @@ def fit_transforms(X, y, transforms):
     transforms : array-like
         List of objects with a fit_transform function that accepts two parameters.
 
+    verbose : boolean, optional, default False
+        Prints status messages to the console if enabled.
+
+    logger : object, optional, default None
+        Instance of a class that can log messages to an output file.
+
     Returns
     ----------
     transforms : array-like
         List of transform objects after calling fit_transform on the input data.
     """
+    print_status_message('Fitting transforms...', verbose, logger)
     for i, trans in enumerate(transforms):
         if trans is not None:
             X = trans.fit_transform(X, y)
         transforms[i] = trans
 
+    print_status_message('Transform fitting complete.', verbose, logger)
+
     return transforms
 
 
-def apply_transforms(X, transforms):
+def apply_transforms(X, transforms, verbose=False, logger=None):
     """
     Applies pre-computed transformations to a data set.
 
@@ -176,19 +256,28 @@ def apply_transforms(X, transforms):
     transforms : array-like
         List of objects with a transform function that accepts one parameter.
 
+    verbose : boolean, optional, default False
+        Prints status messages to the console if enabled.
+
+    logger : object, optional, default None
+        Instance of a class that can log messages to an output file.
+
     Returns
     ----------
     X : array-like
         Training input samples after iteratively applying each transform to the data.
     """
+    print_status_message('Applying transforms...', verbose, logger)
     for trans in transforms:
         if trans is not None:
             X = trans.transform(X)
 
+    print_status_message('Transform application complete.', verbose, logger)
+
     return X
 
 
-def score(y, y_pred, metric):
+def score(y, y_pred, metric, verbose=False, logger=None):
     """
     Calculates a score for the given predictions using the provided metric.
 
@@ -203,32 +292,45 @@ def score(y, y_pred, metric):
     metric : {'accuracy', 'f1', 'log_loss', 'mean_absolute_error', 'mean_squared_error', 'r2', 'roc_auc'}
         Scoring metric.
 
+    verbose : boolean, optional, default False
+        Prints status messages to the console if enabled.
+
+    logger : object, optional, default None
+        Instance of a class that can log messages to an output file.
+
     Returns
     ----------
-    score : float
+    s : float
         Calculated score between the target and predicted target values.
     """
+    s = None
     y = y.ravel()
     y_pred = y_pred.ravel()
-    assert y.shape == y_pred.shape
+    assert y.shape == y_pred.shape, 'Shape of y and y_pred do not match.'
 
     if metric == 'accuracy':
-        return accuracy_score(y, y_pred)
+        s = accuracy_score(y, y_pred)
     elif metric == 'f1':
-        return f1_score(y, y_pred)
+        s = f1_score(y, y_pred)
     elif metric == 'log_loss':
-        return log_loss(y, y_pred)
+        s = log_loss(y, y_pred)
     elif metric == 'mean_absolute_error':
-        return mean_absolute_error(y, y_pred)
+        s = mean_absolute_error(y, y_pred)
     elif metric == 'mean_squared_error':
-        return mean_squared_error(y, y_pred)
+        s = mean_squared_error(y, y_pred)
     elif metric == 'r2':
-        return r2_score(y, y_pred)
+        s = r2_score(y, y_pred)
     elif metric == 'roc_auc':
-        return roc_auc_score(y, y_pred)
+        s = roc_auc_score(y, y_pred)
+
+    if s is not None:
+        print_status_message('Score = {0}'.format(str(round(s, 6))), verbose, logger)
+        return s
+    else:
+        raise Exception('Invalid metric was provided: ' + str(metric))
 
 
-def predict_score(X, y, model, metric):
+def predict_score(X, y, model, metric, verbose=False, logger=None):
     """
     Predicts and scores the model's performance and returns the result.
 
@@ -246,13 +348,21 @@ def predict_score(X, y, model, metric):
     metric : {'accuracy', 'f1', 'log_loss', 'mean_absolute_error', 'mean_squared_error', 'r2', 'roc_auc', None}
         Scoring metric.
 
+    verbose : boolean, optional, default False
+        Prints status messages to the console if enabled.
+
+    logger : object, optional, default None
+        Instance of a class that can log messages to an output file.
+
     Returns
     ----------
-    score : float
+    s : float
         Calculated score between the target and predicted target values.
     """
     if metric is not None:
         y_pred = model.predict(X)
-        return score(y, y_pred, metric)
+        return score(y, y_pred, metric, verbose, logger)
     else:
-        return model.score(X, y)
+        s = model.score(X, y)
+        print_status_message('Score = {0}'.format(str(round(s, 6))), verbose, logger)
+        return s
