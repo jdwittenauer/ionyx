@@ -102,7 +102,7 @@ def train_model(X, y, model, library, metric, transforms, eval=False, plot_eval_
             model.fit(X, y)
 
     t1 = time.time()
-    print_status_message('Model trained in {0:3f} s.'.format(str(t1 - t0)), verbose, logger)
+    print_status_message('Model trained in {0:3f} s.'.format(t1 - t0), verbose, logger)
 
     print_status_message('Model hyper-parameters:', verbose, logger)
     print_status_message(str(model.get_params()), verbose, logger)

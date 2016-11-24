@@ -69,9 +69,9 @@ def parameter_grid_search(X, y, model, metric, transform_grid, param_grid,
             print_status_message('Evaluation score = {0}'.format(str(eval_score)), verbose, logger)
 
             tsub1 = time.time()
-            print_status_message('Model trained in {0:3f} s.'.format(str(tsub0 - tsub1)), verbose, logger)
+            print_status_message('Model trained in {0:3f} s.'.format(tsub0 - tsub1), verbose, logger)
             print_status_message('', verbose, logger)
             print_status_message('', verbose, logger)
 
     t1 = time.time()
-    print_status_message('Grid search complete in {0:3f} s.'.format(str(t0 - t1)), verbose, logger)
+    print_status_message('Grid search complete in {0:3f} s.'.format(t0 - t1), verbose, logger)

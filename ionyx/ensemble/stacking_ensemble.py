@@ -141,7 +141,7 @@ def train_stacked_ensemble(X, y, X_test, models, metric, transforms, n_folds, ve
         y_true[eval_out_index] = y_out_eval
 
     t1 = time.time()
-    print_status_message('Ensemble training completed in {0:3f} s.'.format(str(t1 - t0)), verbose, logger)
+    print_status_message('Ensemble training completed in {0:3f} s.'.format(t1 - t0), verbose, logger)
 
     for k, model in enumerate(models):
         avg_train_score = model_train_scores[:, k].sum(axis=0) / n_folds

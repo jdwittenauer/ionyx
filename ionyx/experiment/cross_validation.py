@@ -66,7 +66,7 @@ def cross_validate(X, y, model, metric, transforms, n_folds, verbose=False, logg
         y_true = np.append(y_true, y_eval)
 
     t1 = time.time()
-    print_status_message('Cross-validation completed in {0:3f} s.'.format(str(t1 - t0)), verbose, logger)
+    print_status_message('Cross-validation completed in {0:3f} s.'.format(t1 - t0), verbose, logger)
 
     avg_train_score = sum(y_train_scores) / len(y_train_scores)
     print_status_message('Average training score = {0}'.format(str(avg_train_score)), verbose, logger)
@@ -170,7 +170,7 @@ def sequence_cross_validate(X, y, model, metric, transforms, n_folds, strategy='
             fig.tight_layout()
 
     t1 = time.time()
-    print_status_message('Cross-validation completed in {0:3f} s.'.format(str(t1 - t0)), verbose, logger)
+    print_status_message('Cross-validation completed in {0:3f} s.'.format(t1 - t0), verbose, logger)
 
     xval_score = np.mean(scores)
     print_status_message('Cross-validation score = {0}'.format(str(xval_score)), verbose, logger)
@@ -232,4 +232,4 @@ def plot_learning_curve(X, y, model, metric, transforms, n_folds, verbose=False,
     ax.legend(loc='best')
     fig.tight_layout()
     t1 = time.time()
-    print_status_message('Learning curve generated in {0:3f} s.'.format(str(t1 - t0)), verbose, logger)
+    print_status_message('Learning curve generated in {0:3f} s.'.format(t1 - t0), verbose, logger)
