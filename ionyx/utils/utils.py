@@ -52,10 +52,10 @@ def print_status_message(message, verbose=False, logger=None):
     """
     if verbose:
         now = datetime.datetime.now().replace(microsecond=0).isoformat(' ')
+        print('(' + now + ') ' + message)
+
         if logger is not None:
-            logger.write('(' + now + ') ' + message)
-        else:
-            print('(' + now + ') ' + message)
+            logger.write('(' + now + ') ' + message + '\n')
 
 
 def load_csv_data(filename, dtype=None, index=None, convert_to_date=False, verbose=False, logger=None):

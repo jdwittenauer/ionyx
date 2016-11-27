@@ -58,6 +58,7 @@ def train_model(X, y, model, library, metric, transforms, eval=False, plot_eval_
     training_history : array-like
         Model performance on a validation set after each training epoch.  Only available for certain models.
     """
+    print_status_message('Beginning model training...', verbose, logger)
     t0 = time.time()
     X_train = None
     X_eval = None

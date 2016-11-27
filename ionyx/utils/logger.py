@@ -6,10 +6,17 @@ class Logger(object):
     Parameters
     ----------
     path : string
-        The location of the text file to open or create.  Will append if existing file is specified.
+        The location of the text file to open or create.
+    mode : { 'append', 'replace' }
+        Specifies whether to append or replace if file already exists.
     """
-    def __init__(self, path):
-        self.log = open(path, 'a')
+    def __init__(self, path, mode):
+        if mode == 'append':
+            self.log = open(path, 'a')
+        elif mode == 'replace':
+            self.log = open(path, 'w')
+        else:
+            raise Exception('File write mode not valid.')
 
     def write(self, message):
         """
@@ -21,7 +28,6 @@ class Logger(object):
             Text message to record and print.
         """
         self.log.write(message)
-        print(message)
 
     def close(self):
         """
