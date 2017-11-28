@@ -1,7 +1,7 @@
 import time
 import numpy as np
 import pandas as pd
-from sklearn.cross_validation import KFold
+from sklearn.model_selection import KFold
 
 from ..utils import print_status_message, fit_transforms, apply_transforms, score
 from ..visualization import visualize_correlations

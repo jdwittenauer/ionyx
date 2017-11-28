@@ -1,8 +1,8 @@
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.cross_validation import KFold
-from sklearn.learning_curve import learning_curve
+from sklearn.model_selection import KFold
+from sklearn.model_selection import learning_curve
 
 from ..utils import print_status_message, fit_transforms, apply_transforms, score
 

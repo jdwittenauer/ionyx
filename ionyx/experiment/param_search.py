@@ -1,6 +1,6 @@
 import time
-from sklearn.cross_validation import train_test_split
-from sklearn.grid_search import ParameterGrid
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import ParameterGrid
 
 from ..utils import print_status_message, fit_transforms, apply_transforms, predict_score
 

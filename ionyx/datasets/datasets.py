@@ -3,7 +3,7 @@ import pandas as pd
 from zipfile import ZipFile
 from sklearn.preprocessing import LabelEncoder
 
-from ..utils import CategoryEncoder
+from ..contrib import CategoryEncoder
 
 
 def load_bike_sharing():
