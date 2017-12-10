@@ -1,15 +1,11 @@
-import os
-import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import GridSearchCV, cross_val_score
-from ionyx.contrib.prophet_regressor import ProphetRegressor
-from ionyx.contrib.time_series_split import TimeSeriesSplit
+from ionyx.contrib import ProphetRegressor
+from ionyx.contrib import TimeSeriesSplit
+from ionyx.datasets import DataSetLoader
 
-path = os.path.join(os.getcwd() + '\\ionyx\\contrib', 'prophet_regressor_data.csv')
-data = pd.read_csv(path, parse_dates=['ds'])
-X = data['ds'].values
-y = data['y'].values
+data, X, y = DataSetLoader.load_time_series()
 
 prophet = ProphetRegressor(n_changepoints=0)
 prophet.fit(X, y)
@@ -17,12 +13,11 @@ y_pred = prophet.predict(X)
 print(mean_absolute_error(y, y_pred))
 
 cv = TimeSeriesSplit(n_splits=3)
-print(np.mean(cross_val_score(prophet, X, y, cv=cv)))
+print(cross_val_score(prophet, X, y, cv=cv))
 
 param_grid = [
     {
-        'n_changepoints': [0, 25],
-        'changepoint_prior_scale': [0.005, 0.05]
+        'n_changepoints': [0, 25]
     }
 ]
 grid = GridSearchCV(prophet, param_grid=param_grid, cv=cv, return_train_score=True)

@@ -1,5 +1,5 @@
 import numpy as np
-from ionyx.contrib.time_series_split import TimeSeriesSplit
+from ionyx.contrib import TimeSeriesSplit
 
 X = np.array([[1, 2], [3, 4], [1, 2], [3, 4], [1, 2], [3, 4], [1, 2], [3, 4]])
 y = np.array([0, 1, 2, 3, 4, 5, 6, 7])
