@@ -3,7 +3,7 @@ from scipy.stats import uniform, randint
 
 class ParameterSearchConfig(object):
     """
-    Configuration class that provides pre-defined grid parameters for a variety of models.
+    Provides pre-defined grid parameters for a variety of models.
     """
     def __init__(self):
         pass

@@ -77,9 +77,3 @@ class CategoryToNumeric(object):
         """
         self.fit(X, y)
         return self.transform(X)
-
-    def __repr__(self):
-        """
-        Overrides the method that prints a string representation of the object.
-        """
-        return '%s' % self.__class__.__name__

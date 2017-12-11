@@ -26,7 +26,7 @@ class CategoryEncoder(object):
         X : array-like
             Training input samples.
         """
-        if self.categorical_features is not None:
+        if self.categorical_features:
             for i in self.categorical_features:
                 encoder = LabelEncoder()
                 encoder.fit(X[:, i])
@@ -64,9 +64,3 @@ class CategoryEncoder(object):
         """
         self.fit(X)
         return self.transform(X)
-
-    def __repr__(self):
-        """
-        Overrides the method that prints a string representation of the object.
-        """
-        return '%s' % self.__class__.__name__
