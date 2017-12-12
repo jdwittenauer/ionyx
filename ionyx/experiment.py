@@ -81,7 +81,78 @@ class Experiment(object):
 
     def train_model(self, X, y, validate=False, early_stopping=False,
                     early_stopping_rounds=None, plot_eval_history=False):
-        pass
+        """
+        Trains a new model using the provided training data.
+
+        Parameters
+        ----------
+        X : array-like
+            Training input samples.
+
+        y : array-like
+            Target values.
+
+        validate : boolean, optional, default False
+            Evaluate model on a hold-out set during training.
+
+        early_stopping : boolean, optional, default False
+            Stop training the model when performance on a validation set begins to drop.
+            Eval must be enabled.
+
+        early_stopping_rounds : int, optional, default None
+            Number of training iterations to allow before stopping training due to performance
+            on a validation set. Eval and early_stopping must be enabled.
+
+        plot_eval_history : boolean, optional, default False
+            Plot model performance as a function of training time.  Eval must be enabled.
+        """
+        self.print_message('Beginning model training...')
+        self.print_message('X dimensions = {0}'.format(X.shape))
+        self.print_message('y dimensions = {0}'.format(y.shape))
+        t0 = time.time()
+
+        if validate and self.package in ['xgboost', 'keras']:
+            X_train, X_eval, y_train, y_eval = train_test_split(X, y, test_size=0.1)
+
+            if early_stopping:
+                if self.package == 'xgboost':
+                    # TODO
+                    self.model.fit(X_train, y_train, eval_set=[(X_eval, y_eval)], eval_metric='rmse',
+                                   early_stopping_rounds=early_stopping_rounds)
+                    training_history = self.model.eval_results
+                elif self.package == 'keras':
+                    # TODO
+                    raise Exception('Not implemented.')
+            else:
+                if self.package == 'xgboost':
+                    # TODO
+                    self.model.fit(X_train, y_train, eval_set=[(X_eval, y_eval)], eval_metric='rmse')
+                    training_history = self.model.eval_results
+                elif self.package == 'keras':
+                    # TODO
+                    training_history = self.model.fit(X_train, y_train, validation_data=(X_eval, y_eval))
+                    min_eval_loss = min(training_history.history['val_loss'])
+                    min_eval_epoch = min(enumerate(training_history.history['loss']), key=lambda x: x[1])[0] + 1
+
+            if plot_eval_history:
+                if self.package == 'xgboost':
+                    # TODO
+                    raise Exception('Not implemented.')
+                elif self.package == 'keras':
+                    # TODO
+                    raise Exception('Not implemented.')
+
+            t1 = time.time()
+            self.print_message('Model training complete in {0:3f} s.'.format(t1 - t0))
+            self.print_message('Training score = {0}'.format(self.model.score(X_train)))
+            self.print_message('Evaluation score = {0}'.format(self.model.score(X_eval)))
+        elif validate:
+            raise Exception('Package does not support evaluation during training.')
+        else:
+            self.model.fit(X, y)
+            t1 = time.time()
+            self.print_message('Model training complete in {0:3f} s.'.format(t1 - t0))
+            self.print_message('Training score = {0}'.format(self.model.score(X)))
 
     def cross_validate(self, X, y, cv):
         pass
