@@ -155,10 +155,84 @@ class Experiment(object):
             self.print_message('Training score = {0}'.format(self.model.score(X)))
 
     def cross_validate(self, X, y, cv):
-        pass
+        """
+        Performs cross-validation to estimate the true performance of the model.
+
+        Parameters
+        ----------
+        X : array-like
+            Training input samples.
+
+        y : array-like
+            Target values.
+
+        cv : object
+            A cross-validation strategy.  Accepts all options considered valid by
+            scikit-learn.
+        """
+        self.print_message('Beginning cross-validation...')
+        self.print_message('X dimensions = {0}'.format(X.shape))
+        self.print_message('y dimensions = {0}'.format(y.shape))
+        self.print_message('Cross-validation strategy = {0}'.format(cv))
+        t0 = time.time()
+        results = cross_validate(self.model, X, y, scoring=self.scoring_metric, cv=cv,
+                                 n_jobs=self.n_jobs, verbose=0, return_train_score=True)
+        t1 = time.time()
+        self.print_message('Cross-validation complete in {0:3f} s.'.format(t1 - t0))
+
+        train_score = np.mean(results['train_score'])
+        test_score = np.mean(results['test_score'])
+        self.print_message('Training score = {0}'.format(train_score))
+        self.print_message('Cross-validation score = {0}'.format(test_score))
 
     def learning_curve(self, X, y, cv, fig_size=16):
-        pass
+        """
+        Plots a learning curve showing model performance against both training and validation
+        data sets as a function of the number of training samples.
+
+        Parameters
+        ----------
+        X : array-like
+            Training input samples.
+
+        y : array-like
+            Target values.
+
+        cv : object
+            A cross-validation strategy.  Accepts all options considered valid by
+            scikit-learn.
+
+        fig_size : int, optional, default 16
+            Size of the plot.
+        """
+        self.print_message('Plotting learning curve...')
+        self.print_message('X dimensions = {0}'.format(X.shape))
+        self.print_message('y dimensions = {0}'.format(y.shape))
+        self.print_message('Cross-validation strategy = {0}'.format(cv))
+        t0 = time.time()
+
+        train_sizes, train_scores, test_scores = learning_curve(self.model, X, y, scoring=self.scoring_metric,
+                                                                cv=cv, n_jobs=self.n_jobs, verbose=0)
+        train_scores_mean = np.mean(train_scores, axis=1)
+        train_scores_std = np.std(train_scores, axis=1)
+        test_scores_mean = np.mean(test_scores, axis=1)
+        test_scores_std = np.std(test_scores, axis=1)
+
+        fig, ax = plt.subplots(figsize=(fig_size, fig_size * 3 / 4))
+        ax.set_title('Learning Curve')
+        ax.set_xlabel('Training Examples')
+        ax.set_ylabel('Score')
+        ax.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std,
+                        alpha=0.1, color='b')
+        ax.fill_between(train_sizes, test_scores_mean - test_scores_std, test_scores_mean + test_scores_std,
+                        alpha=0.1, color='r')
+        ax.plot(train_sizes, train_scores_mean, 'o-', color='b', label='Training score')
+        ax.plot(train_sizes, test_scores_mean, 'o-', color='r', label='Cross-validation score')
+        ax.legend(loc='best')
+        fig.tight_layout()
+
+        t1 = time.time()
+        self.print_message('Plot generation complete in {0:3f} s.'.format(t1 - t0))
 
     def param_search(self, X, y, param_grid, cv, search_type='grid', n_iter=100, save_results_path=None):
         pass
