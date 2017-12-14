@@ -235,10 +235,126 @@ class Experiment(object):
         self.print_message('Plot generation complete in {0:3f} s.'.format(t1 - t0))
 
     def param_search(self, X, y, param_grid, cv, search_type='grid', n_iter=100, save_results_path=None):
-        pass
+        """
+        Conduct a search over some pre-defined set of hyper-parameter configurations
+        to find the best-performing set of parameter.
+
+        Parameters
+        ----------
+        X : array-like
+            Training input samples.
+
+        y : array-like
+            Target values.
+
+        param_grid : list, dict
+            Parameter search space.  See scikit-learn documentation for GridSearchCV and
+            RandomSearchCV for acceptable formatting.
+
+        cv : object
+            A cross-validation strategy.  Accepts all options considered valid by
+            scikit-learn.
+
+        search_type : {'grid', 'random'}, optional, default 'grid'
+            Specifies use of grid search or random search.  Requirements for param_grid are
+            different depending on which method is used.  See scikit-learn documentation for
+            GridSearchCV and RandomSearchCV for details.
+
+        n_iter : int, optional, default 100
+            Number of search iterations to run.  Only applies to random search.
+
+        save_results_path : string, optional, default None
+            Specifies a location to save the full results of the search in format.
+            File name should end in .csv.
+        """
+        self.print_message('Beginning hyper-parameter search...')
+        self.print_message('X dimensions = {0}'.format(X.shape))
+        self.print_message('y dimensions = {0}'.format(y.shape))
+        self.print_message('Cross-validation strategy = {0}'.format(cv))
+        t0 = time.time()
+
+        if search_type == 'grid':
+            search = GridSearchCV(self.model, param_grid=param_grid, scoring=self.scoring_metric,
+                                  n_jobs=self.n_jobs, cv=cv, refit=self.scoring_metric,
+                                  verbose=0, return_train_score=True)
+        elif search_type == 'random':
+            search = RandomizedSearchCV(self.model, param_grid, n_iter=n_iter, scoring=self.scoring_metric,
+                                        n_jobs=self.n_jobs, cv=cv, refit=self.scoring_metric,
+                                        verbose=0, return_train_score=True)
+        else:
+            raise Exception('Search type not supported.')
+
+        search.fit(X, y)
+
+        t1 = time.time()
+        self.print_message('Hyper-parameter search complete in {0:3f} s.'.format(t1 - t0))
+        self.print_message('Best score found = {0}'.format(search.best_score_))
+        self.print_message('Best parameters found = {0}'.format(search.best_params_))
+        self.best_model_ = search.best_estimator_
+
+        if save_results_path:
+            results = pd.DataFrame(search.cv_results_)
+            results = results.sort_values(by='mean_test_score', ascending=False)
+            results.to_csv(save_results_path, index=False)
 
     def load_model(self, filename):
-        pass
+        """
+        Load a previously trained model from disk.
+
+        Parameters
+        ----------
+        filename : string
+            Location of the file to read.
+        """
+        self.print_message('Loading model...')
+        t0 = time.time()
+
+        if self.package == 'sklearn':
+            model_file = open(filename, 'rb')
+            self.model = pickle.load(model_file)
+            model_file.close()
+        elif self.package == 'xgboost':
+            # TODO
+            raise Exception('Not implemented.')
+        elif self.package == 'keras':
+            # TODO
+            raise Exception('Not implemented.')
+        elif self.package == 'prophet':
+            # TODO
+            raise Exception('Not implemented.')
+        else:
+            raise Exception('Package not supported.')
+
+        t1 = time.time()
+        self.print_message('Model loaded in {0:3f} s.'.format(t1 - t0))
 
     def save_model(self, filename):
-        pass
+        """
+        Persist a trained model to disk.
+
+        Parameters
+        ----------
+        filename : string
+            Location of the file to write.
+        """
+        self.print_message('Saving model...')
+        t0 = time.time()
+
+        if self.package == 'sklearn':
+            model_file = open(filename, 'wb')
+            pickle.dump(self.model, model_file)
+            model_file.close()
+        elif self.package == 'xgboost':
+            # TODO
+            raise Exception('Not implemented.')
+        elif self.package == 'keras':
+            # TODO
+            raise Exception('Not implemented.')
+        elif self.package == 'prophet':
+            # TODO
+            raise Exception('Not implemented.')
+        else:
+            raise Exception('Package not supported.')
+
+        t1 = time.time()
+        self.print_message('Model saved in {0:3f} s.'.format(t1 - t0))
