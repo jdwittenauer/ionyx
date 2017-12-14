@@ -74,10 +74,10 @@ class Utils(object):
         if index is not None:
             if convert_to_date:
                 if type(index) is str:
-                    data[index] = data[index].convert_objects(convert_dates='coerce')
+                    data[index] = pd.to_datetime(data[index])
                 else:
                     for key in index:
-                        data[key] = data[key].convert_objects(convert_dates='coerce')
+                        data[key] = pd.to_datetime(data[key])
 
             data = data.set_index(index)
 

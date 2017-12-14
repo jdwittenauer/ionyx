@@ -1,3 +1,4 @@
+from .averaging_regressor import AveragingRegressor
 from .category_encoder import CategoryEncoder
 from .category_to_numeric import CategoryToNumeric
 from .keras_builder import KerasBuilder

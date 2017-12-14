@@ -35,7 +35,7 @@ class DataSetLoader(object):
         file_location = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'bike_sharing.zip')
         z = ZipFile(file_location)
         data = pd.read_csv(z.open('train.csv'))
-        data['datetime'] = data['datetime'].convert_objects(convert_dates='coerce')
+        data['datetime'] = pd.to_datetime(data['datetime'])
         data = data.set_index('datetime')
 
         # drop the total count label and move the registered/casual counts to the front
@@ -169,6 +169,7 @@ class DataSetLoader(object):
         file_location = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'time_series.zip')
         z = ZipFile(file_location)
         data = pd.read_csv(z.open('train.csv'))
+        data['ds'] = pd.to_datetime(data['ds'])
 
         X = data['ds'].values
         y = data['y'].values

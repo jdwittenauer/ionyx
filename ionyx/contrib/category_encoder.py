@@ -48,7 +48,7 @@ class CategoryEncoder(object):
             Training input samples.
         """
         X_trans = np.copy(X)
-        for index, encoder in self.encoders_.iteritems():
+        for index, encoder in self.encoders_.items():
             X_trans[:, index] = encoder.transform(X[:, index])
 
         return X_trans

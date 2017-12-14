@@ -7,7 +7,9 @@ from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegress
 
 class Visualizer(object):
     """
-    Visualize a data set using various pre-built functions.
+    Provides a number of descriptive functions for creating useful visualizations.  Initialize the
+    class by passing in a data set and then call the functions individually to create the plots.
+    Each method is designed to adapt the character of the visualization based on the inputs provided.
 
     Parameters
     ----------
@@ -223,8 +225,7 @@ class Visualizer(object):
                                                  legend=False, title=data.columns[index])
             fig.tight_layout()
 
-    def visualize_transforms(self, transform, X_columns, y_column=None,
-                             supervision_task=None, n_components=2, scatter_size=50):
+    def visualize_transforms(self, transform, X_columns, y_column=None, task=None, n_components=2, scatter_size=50):
         """
         Generates plots to visualize the data transformed by a linear or manifold algorithm.
 
@@ -239,7 +240,7 @@ class Visualizer(object):
         y_column : string, optional, default None
             Target column.  Used to color input values for label-based visualizations.
 
-        supervision_task : {'classification', 'regression', None}, optional, default None
+        task : {'classification', 'regression', None}, optional, default None
             Specifies if the data set is being used for classification or regression.  If one of these
             is specified, the plots will color input values using the provided labels.
 
@@ -253,7 +254,7 @@ class Visualizer(object):
         y = self.data[y_column].values
         X = transform.fit_transform(X)
 
-        if supervision_task == 'classification':
+        if task == 'classification':
             class_count = np.count_nonzero(np.unique(y))
             colors = sb.color_palette('hls', class_count)
 
@@ -264,7 +265,7 @@ class Visualizer(object):
                 ax.set_title('Components ' + str(i + 1) + ' and ' + str(i + 2))
                 ax.legend()
                 fig.tight_layout()
-        elif supervision_task == 'regression':
+        elif task == 'regression':
             for i in range(n_components - 1):
                 fig, ax = plt.subplots(figsize=(self.fig_size, self.fig_size * 3 / 4))
                 sc = ax.scatter(X[:, i], X[:, i + 1], s=scatter_size, c=y, cmap='Blues')
@@ -280,8 +281,7 @@ class Visualizer(object):
                 ax.legend()
                 fig.tight_layout()
 
-    def visualize_feature_importance(self, X_columns, y_column, average=False,
-                                     supervision_task='classification', **kwargs):
+    def visualize_feature_importance(self, X_columns, y_column, average=False, task='classification', **kwargs):
         """
         Visualize the predictive importance of each feature in a data set using a trained
         gradient boosting model.
@@ -297,7 +297,7 @@ class Visualizer(object):
         average : boolean, optional, default False
             Smooth the results by fitting the model multiple times to reduce random variance.
 
-        supervision_task : {'classification', 'regression'}, optional, default 'classification'
+        task : {'classification', 'regression'}, optional, default 'classification'
             Specifies if the target is continuous or categorical.
 
         **kwargs : dict, optional
@@ -307,7 +307,7 @@ class Visualizer(object):
         X = self.data[X_columns]
         y = self.data[y_column]
 
-        if supervision_task == 'classification':
+        if task == 'classification':
             model = GradientBoostingClassifier(**kwargs)
         else:
             model = GradientBoostingRegressor(**kwargs)
@@ -336,8 +336,7 @@ class Visualizer(object):
         fig.tight_layout()
 
     def visualize_partial_dependence(self, X_columns, y_column, var_column, average=False,
-                                     supervision_task='classification', grid_resolution=100,
-                                     **kwargs):
+                                     task='classification', grid_resolution=100, **kwargs):
         """
         Visualize the marginal effect of a single variable on a dependent variable, holding
         all other variables constant.  Generated via a trained gradient boosting model.
@@ -356,7 +355,7 @@ class Visualizer(object):
         average : boolean, optional, default False
             Smooth the results by fitting the model multiple times to reduce random variance.
 
-        supervision_task : {'classification', 'regression'}, optional, default 'classification'
+        task : {'classification', 'regression'}, optional, default 'classification'
             Specifies if the target is continuous or categorical.
 
         grid_resolution : int, optional, default 100
@@ -370,7 +369,7 @@ class Visualizer(object):
         y = self.data[y_column]
         index = X_columns.index(var_column)
 
-        if supervision_task == 'classification':
+        if task == 'classification':
             model = GradientBoostingClassifier(**kwargs)
         else:
             model = GradientBoostingRegressor(**kwargs)
