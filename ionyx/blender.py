@@ -186,3 +186,37 @@ class Blender(object):
             self.ensemble_ = pipe
             t1 = time.time()
             self.print_message('Ensemble training complete in {0:3f} s.'.format(t1 - t0))
+
+    def model_correlations(self, X, y, cv):
+        """
+        Visualize how correlated each model's predictions are with one another.  Correlations
+        are based on out-of-sample predictions using cross-validation to compare real-world
+        model performance.
+
+        Parameters
+        ----------
+        X : array-like
+            Training input samples.
+
+        y : array-like
+            Target values.
+
+        cv : object
+            A cross-validation strategy.  Accepts all options considered valid by
+            scikit-learn.
+        """
+        self.print_message('Beginning model correlation testing...')
+        self.print_message('X dimensions = {0}'.format(X.shape))
+        self.print_message('y dimensions = {0}'.format(y.shape))
+        self.print_message('Cross-validation strategy = {0}'.format(cv))
+        t0 = time.time()
+
+        names, _ = zip(*self.models)
+        layer = make_stack_layer(self.models, cv=cv, n_jobs=self.n_jobs)
+        predictions = layer.fit_transform(X, y)
+        df = pd.DataFrame(predictions, columns=names)
+        viz = Visualizer(df)
+        viz.visualize_correlations()
+
+        t1 = time.time()
+        self.print_message('Correlation testing complete in {0:3f} s.'.format(t1 - t0))
