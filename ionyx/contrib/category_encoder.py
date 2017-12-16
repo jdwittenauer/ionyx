@@ -33,7 +33,7 @@ class CategoryEncoder(object):
                 self.encoders_[i] = encoder
         else:
             for i in range(X.shape[1]):
-                if type(X[0, i]) is str:
+                if type(X[0, i]) in [str, np.str_, np.string_, np.bytes_, np.unicode_]:
                     encoder = LabelEncoder()
                     encoder.fit(X[:, i])
                     self.encoders_[i] = encoder

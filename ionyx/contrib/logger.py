@@ -7,16 +7,15 @@ class Logger(object):
     ----------
     path : string
         The location of the text file to open or create.
-    mode : { 'append', 'replace' }
+
+    mode : { 'append', 'replace' }, optional, default 'replace'
         Specifies whether to append or replace if file already exists.
     """
-    def __init__(self, path, mode):
+    def __init__(self, path, mode='replace'):
         if mode == 'append':
             self.log = open(path, 'a')
-        elif mode == 'replace':
-            self.log = open(path, 'w')
         else:
-            raise Exception('File write mode not valid.')
+            self.log = open(path, 'w')
 
     def write(self, message):
         """
@@ -27,16 +26,10 @@ class Logger(object):
         message : string
             Text message to record and print.
         """
-        self.log.write(message)
+        self.log.write(message + '\n')
 
     def close(self):
         """
         Close the connection to the underlying file.
         """
         self.log.close()
-
-    def __repr__(self):
-        """
-        Overrides the method that prints a string representation of the object.
-        """
-        return '%s' % self.__class__.__name__

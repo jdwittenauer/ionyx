@@ -1,6 +1,7 @@
 import numpy as np
-from sklearn.base import RegressorMixin
+from sklearn.base import RegressorMixin, clone
 from sklearn.externals.joblib import Parallel, delayed
+from sklearn.utils import Bunch
 from sklearn.utils.metaestimators import _BaseComposition
 
 
@@ -35,6 +36,7 @@ class AveragingRegressor(_BaseComposition, RegressorMixin):
         self.weights = weights
         self.n_jobs = n_jobs
         self.estimators_ = None
+        self.named_estimators_ = None
 
     def fit(self, X, y):
         """
@@ -55,6 +57,10 @@ class AveragingRegressor(_BaseComposition, RegressorMixin):
         self.estimators_ = Parallel(n_jobs=self.n_jobs)(
                 delayed(_parallel_fit_estimator)(clone(model), X, y)
                 for model in models)
+
+        self.named_estimators_ = Bunch(**dict())
+        for k, e in zip(self.estimators, self.estimators_):
+            self.named_estimators_[k[0]] = e
 
         return self
 

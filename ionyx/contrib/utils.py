@@ -40,10 +40,10 @@ class Utils(object):
         return instance
 
     @staticmethod
-    def load_csv_data(filename, dtype=None, index=None, convert_to_date=False, verbose=False, logger=None):
+    def load_csv_data(filename, dtype=None, index=None, convert_to_date=False):
         """
-        Load a csv data file into a data frame.  This function wraps the Pandas read_csv function with logic
-        to set the index for the data frame and convert fields to date types if necessary.
+        Load a csv data file into a data frame.  This function wraps the Pandas read_csv function
+        with logic to set the index for the data frame and convert fields to date types if necessary.
 
         Parameters
         ----------
@@ -58,12 +58,6 @@ class Utils(object):
 
         convert_to_date : boolean, optional, default False
             Boolean indicating if the index consists of date fields.
-
-        verbose : boolean, optional, default False
-            Prints status messages to the console if enabled.
-
-        logger : object, optional, default None
-            Instance of a class that can log messages to an output file.
 
         Returns
         ----------
@@ -81,16 +75,14 @@ class Utils(object):
 
             data = data.set_index(index)
 
-        print_message('Data file {0} loaded successfully.'.format(str(filename)), verbose, logger)
-
         return data
 
     @staticmethod
-    def load_sql_data(engine, table=None, query=None, index=None, params=None,
-                      date_columns=None, verbose=False, logger=None):
+    def load_sql_data(engine, table=None, query=None, index=None, params=None, date_columns=None):
         """
-        Reads SQL data using the specified table or query and returns a data frame with the results.  This function
-        wraps Pandas' read_sql function with logic to allow for a table name to be specified instead of a query.
+        Reads SQL data using the specified table or query and returns a data frame with the
+        results.  This function wraps Pandas' read_sql function with logic to allow for a
+        table name to be specified instead of a query.
 
         Parameters
         ----------
@@ -98,7 +90,8 @@ class Utils(object):
             A SQLAlchemy engine with a connection to the database to read from.
 
         table : string, optional, default None
-            Name of the table to read from if reading entire table contents.  Specify either table or query parameter.
+            Name of the table to read from if reading entire table contents.  Specify either
+            table or query parameter.
 
         query : string, optional, default None
             SQL query to run against the database.  Specify either table or query parameter.
@@ -112,12 +105,6 @@ class Utils(object):
         date_columns : array-like, optional, default None
             List of column names to parse as dates in the data frame.
 
-        verbose : boolean, optional, default False
-            Prints status messages to the console if enabled.
-
-        logger : object, optional, default None
-            Instance of a class that can log messages to an output file.
-
         Returns
         ----------
         data : array-like
@@ -128,7 +115,5 @@ class Utils(object):
         else:
             data = pd.read_sql('SELECT * FROM ' + table, engine, index_col=index,
                                params=params, parse_dates=date_columns)
-
-        print_message('SQL query completed successfully.', verbose, logger)
 
         return data

@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sb
 from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
+from sklearn.preprocessing import LabelEncoder
 
 
 class Visualizer(object):
@@ -10,7 +11,7 @@ class Visualizer(object):
     Provides a number of descriptive functions for creating useful visualizations.  Initialize the
     class by passing in a data set and then call the functions individually to create the plots.
     Each method is designed to adapt the character of the visualization based on the inputs provided.
-
+    
     Parameters
     ----------
     data : array-like
@@ -19,13 +20,80 @@ class Visualizer(object):
     fig_size : int, optional, default 16
         Size of the plots.
     """
-
     def __init__(self, data, fig_size=16):
         self.data = data
         self.fig_size = fig_size
 
-    def visualize_variable_relationships(self, quantitative_vars, category_vars=None, joint_viz_type='scatter',
-                                         pair_viz_type='scatter', factor_viz_type='strip', pair_diag_type='kde'):
+    def feature_distributions(self, viz_type='hist', bins=None, grid_size=4):
+        """
+        Generates feature distribution plots (histogram or kde) for each feature.
+
+        Parameters
+        ----------
+        viz_type : {'hist', 'kde', 'both'}, optional, default 'hist'
+            Type of plot used for visualization.
+
+        bins : int, optional, default None
+            Number of bins to use in histogram plots.
+
+        grid_size : int, optional, default 4
+            Number of vertical/horizontal plots to display in a single window.
+        """
+        if viz_type == 'hist':
+            hist = True
+            kde = False
+        elif viz_type == 'kde':
+            hist = False
+            kde = True
+        elif viz_type == 'both':
+            hist = True
+            kde = True
+        else:
+            raise Exception('Visualization type not supported.')
+
+        data = self.data.fillna(0)
+
+        n_features = len(data.columns)
+        plot_size = grid_size ** 2
+        n_plots = n_features // plot_size if n_features % plot_size == 0 else n_features // plot_size + 1
+
+        for i in range(n_plots):
+            fig, ax = plt.subplots(grid_size, grid_size, figsize=(self.fig_size, self.fig_size / 2))
+            for j in range(plot_size):
+                index = (i * plot_size) + j
+                if index < n_features:
+                    if type(data.iloc[0, index]) is str:
+                        sb.countplot(x=data.columns[index], data=data, ax=ax[j // grid_size, j % grid_size])
+                    else:
+                        sb.distplot(a=data.iloc[:, index], bins=bins, hist=hist, kde=kde,
+                                    label=data.columns[index], ax=ax[j // grid_size, j % grid_size],
+                                    kde_kws={"shade": True})
+            fig.tight_layout()
+
+    def correlations(self, annotate=False):
+        """
+        Generates a correlation matrix heat map.
+
+        Parameters
+        ----------
+        annotate : boolean, optional, default False
+            Annotate the heat map with labels.
+        """
+        corr = self.data.corr()
+
+        if annotate:
+            corr = np.round(corr, 2)
+
+        mask = np.zeros_like(corr, dtype=np.bool)
+        mask[np.triu_indices_from(mask)] = True
+
+        fig, ax = plt.subplots(figsize=(self.fig_size, self.fig_size * 3 / 4))
+        colormap = sb.blend_palette(sb.color_palette('coolwarm'), as_cmap=True)
+        sb.heatmap(corr, mask=mask, cmap=colormap, annot=annotate)
+        fig.tight_layout()
+
+    def variable_relationship(self, quantitative_vars, category_vars=None, joint_viz_type='scatter',
+                              pair_viz_type='scatter', factor_viz_type='strip', pair_diag_type='kde'):
         """
         Generates plots showing the relationship between several variables.  The combination of plots generated
         depends on the number of quantitative and discrete (categorical or ordinal) variables to be analyzed.
@@ -54,13 +122,11 @@ class Visualizer(object):
         if quantitative_vars is None or len(quantitative_vars) == 0:
             raise Exception('Must provide at least one quantitative variable.')
 
-        # compare the continuous variable distributions using a violin plot
         sub_data = self.data[quantitative_vars]
         fig, ax = plt.subplots(1, 1, figsize=(self.fig_size, self.fig_size * 3 / 4))
         sb.violinplot(data=sub_data, ax=ax)
         fig.tight_layout()
 
-        # if categorical variables were provided, visualize the quantitative distributions by category
         if category_vars is not None:
             fig, ax = plt.subplots(len(quantitative_vars), len(category_vars),
                                    figsize=(self.fig_size, self.fig_size * 3 / 4))
@@ -79,7 +145,6 @@ class Visualizer(object):
                             sb.violinplot(x=var, y=cat, data=self.data, ax=ax[i, j])
             fig.tight_layout()
 
-        # generate plots to directly compare the variables
         if category_vars is None:
             if len(quantitative_vars) == 2:
                 sb.jointplot(x=quantitative_vars[0], y=quantitative_vars[1], data=self.data,
@@ -106,77 +171,7 @@ class Visualizer(object):
                 sb.pairplot(data=self.data, hue=category_vars[0], vars=quantitative_vars, kind=pair_viz_type,
                             diag_kind=pair_diag_type, size=self.fig_size / len(quantitative_vars))
 
-    def visualize_feature_distributions(self, viz_type='hist', bins=None, grid_size=4):
-        """
-        Generates feature distribution plots (histogram or kde) for each feature.
-
-        Parameters
-        ----------
-        viz_type : {'hist', 'kde', 'both'}, optional, default 'hist'
-            Type of plot used for visualization.
-
-        bins : int, optional, default None
-            Number of bins to use in histogram plots.
-
-        grid_size : int, optional, default 4
-            Number of vertical/horizontal plots to display in a single window.
-        """
-        if viz_type == 'hist':
-            hist = True
-            kde = False
-        elif viz_type == 'kde':
-            hist = False
-            kde = True
-        elif viz_type == 'both':
-            hist = True
-            kde = True
-        else:
-            raise Exception('Visualization type not supported.')
-
-        # replace NaN values with 0 to prevent exceptions in the lower level API calls
-        data = self.data.fillna(0)
-
-        n_features = len(data.columns)
-        plot_size = grid_size ** 2
-        n_plots = n_features / plot_size if n_features % plot_size == 0 else n_features / plot_size + 1
-
-        for i in range(n_plots):
-            fig, ax = plt.subplots(grid_size, grid_size, figsize=(self.fig_size, self.fig_size / 2))
-            for j in range(plot_size):
-                index = (i * plot_size) + j
-                if index < n_features:
-                    if type(data.iloc[0, index]) is str:
-                        sb.countplot(x=data.columns[index], data=data, ax=ax[j / grid_size, j % grid_size])
-                    else:
-                        sb.distplot(a=data.iloc[:, index], bins=bins, hist=hist, kde=kde,
-                                    label=data.columns[index], ax=ax[j / grid_size, j % grid_size],
-                                    kde_kws={"shade": True})
-            fig.tight_layout()
-
-    def visualize_correlations(self, annotate=False):
-        """
-        Generates a correlation matrix heat map.
-
-        Parameters
-        ----------
-        annotate : boolean, optional, default False
-            Annotate the heat map with labels.
-        """
-        corr = self.data.corr()
-
-        if annotate:
-            corr = np.round(corr, 2)
-
-        # generate a mask for the upper triangle
-        mask = np.zeros_like(corr, dtype=np.bool)
-        mask[np.triu_indices_from(mask)] = True
-
-        fig, ax = plt.subplots(figsize=(self.fig_size, self.fig_size * 3 / 4))
-        colormap = sb.blend_palette(sb.color_palette('coolwarm'), as_cmap=True)
-        sb.heatmap(corr, mask=mask, cmap=colormap, annot=annotate)
-        fig.tight_layout()
-
-    def visualize_sequential_relationships(self, time='index', smooth_method=None, window=1, grid_size=4):
+    def sequential_relationships(self, time='index', smooth_method=None, window=1, grid_size=4):
         """
         Generates line plots to visualize sequential data.
 
@@ -194,7 +189,6 @@ class Visualizer(object):
         grid_size : int, optional, default 4
             Number of vertical/horizontal plots to display in a single window.
         """
-        # replace NaN values with 0 to prevent exceptions in the lower level API calls
         data = self.data.fillna(0)
 
         if time is not 'index':
@@ -204,7 +198,7 @@ class Visualizer(object):
         data.index.name = None
         n_features = len(data.columns)
         plot_size = grid_size ** 2
-        n_plots = n_features / plot_size if n_features % plot_size == 0 else n_features / plot_size + 1
+        n_plots = n_features // plot_size if n_features % plot_size == 0 else n_features // plot_size + 1
 
         for i in range(n_plots):
             fig, ax = plt.subplots(grid_size, grid_size, sharex=True, figsize=(self.fig_size, self.fig_size / 2))
@@ -221,11 +215,12 @@ class Visualizer(object):
                         elif smooth_method == 'kurt':
                             data.iloc[:, index] = pd.rolling_kurt(data.iloc[:, index], window)
 
-                        data.iloc[:, index].plot(ax=ax[j / grid_size, j % grid_size], kind='line',
+                        data.iloc[:, index].plot(ax=ax[j // grid_size, j % grid_size], kind='line',
                                                  legend=False, title=data.columns[index])
             fig.tight_layout()
 
-    def visualize_transforms(self, transform, X_columns, y_column=None, task=None, n_components=2, scatter_size=50):
+    def transform(self, transform, X_columns, y_column=None, supervision_task=None,
+                  n_components=2, scatter_size=50):
         """
         Generates plots to visualize the data transformed by a linear or manifold algorithm.
 
@@ -240,7 +235,7 @@ class Visualizer(object):
         y_column : string, optional, default None
             Target column.  Used to color input values for label-based visualizations.
 
-        task : {'classification', 'regression', None}, optional, default None
+        supervision_task : {'classification', 'regression', None}, optional, default None
             Specifies if the data set is being used for classification or regression.  If one of these
             is specified, the plots will color input values using the provided labels.
 
@@ -251,21 +246,28 @@ class Visualizer(object):
             Size of the points on the scatter plot.
         """
         X = self.data[X_columns].values
-        y = self.data[y_column].values
         X = transform.fit_transform(X)
 
-        if task == 'classification':
-            class_count = np.count_nonzero(np.unique(y))
-            colors = sb.color_palette('hls', class_count)
+        y = None
+        encoder = None
+        if y_column:
+            y = self.data[y_column].values
+            if supervision_task == 'classification':
+                encoder = LabelEncoder()
+                y = encoder.fit_transform(y)
 
+        if y_column and supervision_task == 'classification':
+            class_count = len(np.unique(y))
+            colors = sb.color_palette('hls', class_count)
             for i in range(n_components - 1):
                 fig, ax = plt.subplots(figsize=(self.fig_size, self.fig_size * 3 / 4))
                 for j in range(class_count):
-                    ax.scatter(X[y == j, i], X[y == j, i + 1], s=scatter_size, c=colors[j], label=j)
+                    ax.scatter(X[y == j, i], X[y == j, i + 1], s=scatter_size, c=colors[j],
+                               label=encoder.classes_[j])
                 ax.set_title('Components ' + str(i + 1) + ' and ' + str(i + 2))
                 ax.legend()
                 fig.tight_layout()
-        elif task == 'regression':
+        elif y_column and supervision_task == 'regression':
             for i in range(n_components - 1):
                 fig, ax = plt.subplots(figsize=(self.fig_size, self.fig_size * 3 / 4))
                 sc = ax.scatter(X[:, i], X[:, i + 1], s=scatter_size, c=y, cmap='Blues')
@@ -276,12 +278,12 @@ class Visualizer(object):
         else:
             for i in range(n_components - 1):
                 fig, ax = plt.subplots(figsize=(self.fig_size, self.fig_size * 3 / 4))
-                ax.scatter(X[:, i], X[:, i + 1], s=scatter_size)
+                ax.scatter(X[:, i], X[:, i + 1], s=scatter_size, label='None')
                 ax.set_title('Components ' + str(i + 1) + ' and ' + str(i + 2))
                 ax.legend()
                 fig.tight_layout()
 
-    def visualize_feature_importance(self, X_columns, y_column, average=False, task='classification', **kwargs):
+    def feature_importance(self, X_columns, y_column, average=False, task='classification', **kwargs):
         """
         Visualize the predictive importance of each feature in a data set using a trained
         gradient boosting model.
@@ -335,8 +337,8 @@ class Visualizer(object):
         ax.set_xlabel('Relative Importance')
         fig.tight_layout()
 
-    def visualize_partial_dependence(self, X_columns, y_column, var_column, average=False,
-                                     task='classification', grid_resolution=100, **kwargs):
+    def partial_dependence(self, X_columns, y_column, var_column, average=False,
+                           task='classification', grid_resolution=100, **kwargs):
         """
         Visualize the marginal effect of a single variable on a dependent variable, holding
         all other variables constant.  Generated via a trained gradient boosting model.
