@@ -9,11 +9,10 @@ data, X, y = DataSetLoader.load_time_series()
 
 prophet = ProphetRegressor(n_changepoints=0)
 prophet.fit(X, y)
-y_pred = prophet.predict(X)
-print(mean_absolute_error(y, y_pred))
+print('Model score = {0}'.format(mean_absolute_error(y, prophet.predict(X))))
 
 cv = TimeSeriesSplit(n_splits=3)
-print(cross_val_score(prophet, X, y, cv=cv))
+print('Cross-validation score = {0}'.format(cross_val_score(prophet, X, y, cv=cv)))
 
 param_grid = [
     {
@@ -24,4 +23,5 @@ grid = GridSearchCV(prophet, param_grid=param_grid, cv=cv, return_train_score=Tr
 grid.fit(X, y)
 results = pd.DataFrame(grid.cv_results_)
 results = results.sort_values(by='mean_test_score', ascending=False)
+print('Grid search results:')
 print(results)
