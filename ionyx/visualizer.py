@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sb
 from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
+from sklearn.ensemble.partial_dependence import partial_dependence
 from sklearn.preprocessing import LabelEncoder
 
 
@@ -219,8 +220,7 @@ class Visualizer(object):
                                                  legend=False, title=data.columns[index])
             fig.tight_layout()
 
-    def transform(self, transform, X_columns, y_column=None, supervision_task=None,
-                  n_components=2, scatter_size=50):
+    def transform(self, transform, X_columns, y_column=None, task=None, n_components=2, scatter_size=50):
         """
         Generates plots to visualize the data transformed by a linear or manifold algorithm.
 
@@ -235,7 +235,7 @@ class Visualizer(object):
         y_column : string, optional, default None
             Target column.  Used to color input values for label-based visualizations.
 
-        supervision_task : {'classification', 'regression', None}, optional, default None
+        task : {'classification', 'regression', None}, optional, default None
             Specifies if the data set is being used for classification or regression.  If one of these
             is specified, the plots will color input values using the provided labels.
 
@@ -252,11 +252,11 @@ class Visualizer(object):
         encoder = None
         if y_column:
             y = self.data[y_column].values
-            if supervision_task == 'classification':
+            if task == 'classification':
                 encoder = LabelEncoder()
                 y = encoder.fit_transform(y)
 
-        if y_column and supervision_task == 'classification':
+        if y_column and task == 'classification':
             class_count = len(np.unique(y))
             colors = sb.color_palette('hls', class_count)
             for i in range(n_components - 1):
@@ -267,7 +267,7 @@ class Visualizer(object):
                 ax.set_title('Components ' + str(i + 1) + ' and ' + str(i + 2))
                 ax.legend()
                 fig.tight_layout()
-        elif y_column and supervision_task == 'regression':
+        elif y_column and task == 'regression':
             for i in range(n_components - 1):
                 fig, ax = plt.subplots(figsize=(self.fig_size, self.fig_size * 3 / 4))
                 sc = ax.scatter(X[:, i], X[:, i + 1], s=scatter_size, c=y, cmap='Blues')
@@ -370,6 +370,10 @@ class Visualizer(object):
         X = self.data[X_columns]
         y = self.data[y_column]
         index = X_columns.index(var_column)
+
+        distinct = len(np.unique(self.data[var_column]))
+        if distinct < grid_resolution:
+            grid_resolution = distinct
 
         if task == 'classification':
             model = GradientBoostingClassifier(**kwargs)

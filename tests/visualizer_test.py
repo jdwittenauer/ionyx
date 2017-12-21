@@ -16,9 +16,20 @@ data, _, _, _ = DataSetLoader.load_bike_sharing()
 viz = Visualizer(data)
 viz.sequential_relationships()
 
-data, X, y = DataSetLoader.load_otto_group()
+data, _, _ = DataSetLoader.load_otto_group()
+X_cols = data.columns[1:].tolist()
+y_col = data.columns[0]
 viz = Visualizer(data)
 pca = PCA()
-viz.transform(pca, X_columns=data.columns[1:])
-viz.transform(pca, X_columns=data.columns[1:], y_column=data.columns[0], supervision_task='classification')
-viz.transform(pca, X_columns=data.columns[1:], y_column=data.columns[0], supervision_task='regression')
+viz.transform(pca, X_columns=X_cols)
+viz.transform(pca, X_columns=X_cols, y_column=y_col, task='classification')
+viz.transform(pca, X_columns=X_cols, y_column=y_col, task='regression')
+
+data, _, _ = DataSetLoader.load_otto_group()
+data = data.iloc[:10000, :30]
+X_cols = data.columns[1:].tolist()
+y_col = data.columns[0]
+viz = Visualizer(data)
+viz.feature_importance(X_columns=X_cols, y_column=y_col, average=True, task='classification')
+viz.partial_dependence(X_columns=X_cols, y_column=y_col, var_column='feat_15', average=True,
+                       task='classification')
