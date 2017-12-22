@@ -73,11 +73,14 @@ class Experiment(object):
         now = datetime.datetime.now().replace(microsecond=0).isoformat(' ')
         if self.verbose:
             if pprint:
-                pp.pprint('(' + now + ') ' + message)
+                pp.pprint(message)
             else:
                 print('(' + now + ') ' + message)
         if self.logger:
-            self.logger.write('(' + now + ') ' + message + '\n')
+            if pprint:
+                self.logger.write(pp.pformat(message))
+            else:
+                self.logger.write('(' + now + ') ' + message)
 
     def train_model(self, X, y, validate=False, early_stopping=False,
                     early_stopping_rounds=None, plot_eval_history=False):
@@ -144,15 +147,15 @@ class Experiment(object):
 
             t1 = time.time()
             self.print_message('Model training complete in {0:3f} s.'.format(t1 - t0))
-            self.print_message('Training score = {0}'.format(self.model.score(X_train)))
-            self.print_message('Evaluation score = {0}'.format(self.model.score(X_eval)))
+            self.print_message('Training score = {0}'.format(self.model.score(X_train), y_train))
+            self.print_message('Evaluation score = {0}'.format(self.model.score(X_eval, y_eval)))
         elif validate:
             raise Exception('Package does not support evaluation during training.')
         else:
             self.model.fit(X, y)
             t1 = time.time()
             self.print_message('Model training complete in {0:3f} s.'.format(t1 - t0))
-            self.print_message('Training score = {0}'.format(self.model.score(X)))
+            self.print_message('Training score = {0}'.format(self.model.score(X, y)))
 
     def cross_validate(self, X, y, cv):
         """
@@ -234,7 +237,7 @@ class Experiment(object):
         t1 = time.time()
         self.print_message('Plot generation complete in {0:3f} s.'.format(t1 - t0))
 
-    def param_search(self, X, y, param_grid, cv, search_type='grid', n_iter=100, save_results_path=None):
+    def param_search(self, X, y, cv, param_grid, search_type='grid', n_iter=100, save_results_path=None):
         """
         Conduct a search over some pre-defined set of hyper-parameter configurations
         to find the best-performing set of parameter.
@@ -247,13 +250,13 @@ class Experiment(object):
         y : array-like
             Target values.
 
-        param_grid : list, dict
-            Parameter search space.  See scikit-learn documentation for GridSearchCV and
-            RandomSearchCV for acceptable formatting.
-
         cv : object
             A cross-validation strategy.  Accepts all options considered valid by
             scikit-learn.
+
+        param_grid : list, dict
+            Parameter search space.  See scikit-learn documentation for GridSearchCV and
+            RandomSearchCV for acceptable formatting.
 
         search_type : {'grid', 'random'}, optional, default 'grid'
             Specifies use of grid search or random search.  Requirements for param_grid are

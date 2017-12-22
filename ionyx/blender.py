@@ -60,11 +60,14 @@ class Blender(object):
         now = datetime.datetime.now().replace(microsecond=0).isoformat(' ')
         if self.verbose:
             if pprint:
-                pp.pprint('(' + now + ') ' + message)
+                pp.pprint(message)
             else:
                 print('(' + now + ') ' + message)
         if self.logger:
-            self.logger.write('(' + now + ') ' + message + '\n')
+            if pprint:
+                self.logger.write(pp.pformat(message))
+            else:
+                self.logger.write('(' + now + ') ' + message)
 
     def build_ensemble(self, X, y, cv, task='classification', retrain=False, **kwargs):
         """

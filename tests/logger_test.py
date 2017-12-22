@@ -2,11 +2,12 @@ from ionyx.contrib import Logger
 
 print('Beginning logger test...')
 
-logger = Logger('C:\\Temp\\log.txt', mode='replace')
+path = '/home/john/temp/log.txt'
+logger = Logger(path, mode='replace')
 logger.write("Testing replace mode")
 logger.close()
 
-logger = Logger('C:\\Temp\\log.txt', mode='append')
+logger = Logger(path, mode='append')
 logger.write("Testing append mode")
 logger.close()
 
