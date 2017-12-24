@@ -9,4 +9,9 @@
 - Review documentation and APIs for consistency
 - Add more error checking
 - Finish test cases
+    - Experiment tests
+    - Blender tests
+    - Review tests for consistency
 - Finish experiment class
+- Refactor "print message" function
+- Attribute consistency
