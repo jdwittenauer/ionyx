@@ -5,6 +5,7 @@ import pprint as pp
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.metrics import get_scorer
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.model_selection import cross_validate, learning_curve, train_test_split
 
@@ -28,8 +29,13 @@ class Experiment(object):
         scikit-learn estimators.  Pipelines are also supported.
 
     scoring_metric : string
-        Name of the metric to use to evaluate models.  Text must match a valid metric
-        expected by the package being used.
+        Name of the metric to use to score models.  Text must match a valid scikit-learn
+        metric.
+
+    eval_metric : string
+        Separate metric used specifically for evaluation such as hold-out sets during
+        training.  Text must match an evaluation metric supported by the package the
+        model originates from.
 
     n_jobs : int, optional, default 1
         Number of parallel processes to use (where functionality is available).
@@ -41,13 +47,15 @@ class Experiment(object):
         An instantiated log writer with an open file handle.  If provided, messages
         will be written to the log file.
     """
-    def __init__(self, package, model, scoring_metric, n_jobs=1, verbose=True, logger=None):
+    def __init__(self, package, model, scoring_metric, eval_metric=None, n_jobs=1, verbose=True, logger=None):
         self.package = package
         self.model = model
         self.scoring_metric = scoring_metric
+        self.eval_metric = eval_metric
         self.n_jobs = n_jobs
         self.verbose = verbose
         self.logger = logger
+        self.scorer_ = get_scorer(self.scoring_metric)
         self.best_model_ = None
         self.print_message('Beginning experiment...')
         self.print_message('Package = {0}'.format(package))
@@ -120,17 +128,21 @@ class Experiment(object):
             if early_stopping:
                 if self.package == 'xgboost':
                     # TODO
-                    self.model.fit(X_train, y_train, eval_set=[(X_eval, y_eval)], eval_metric='rmse',
+                    self.model.fit(X_train, y_train, eval_set=[(X_eval, y_eval)], eval_metric=self.eval_metric,
                                    early_stopping_rounds=early_stopping_rounds)
-                    training_history = self.model.eval_results
+                    training_history = xgb.evals_result()['validation_0'][self.scoring_metric]
+                    min_eval_loss = min(training_history)
+                    min_eval_epoch = training_history.index(min(training_history))
                 elif self.package == 'keras':
                     # TODO
                     raise Exception('Not implemented.')
             else:
                 if self.package == 'xgboost':
                     # TODO
-                    self.model.fit(X_train, y_train, eval_set=[(X_eval, y_eval)], eval_metric='rmse')
-                    training_history = self.model.eval_results
+                    self.model.fit(X_train, y_train, eval_set=[(X_eval, y_eval)], eval_metric=self.eval_metric)
+                    training_history = xgb.evals_result()['validation_0'][self.scoring_metric]
+                    min_eval_loss = min(training_history)
+                    min_eval_epoch = training_history.index(min(training_history))
                 elif self.package == 'keras':
                     # TODO
                     training_history = self.model.fit(X_train, y_train, validation_data=(X_eval, y_eval))
@@ -147,15 +159,16 @@ class Experiment(object):
 
             t1 = time.time()
             self.print_message('Model training complete in {0:3f} s.'.format(t1 - t0))
-            self.print_message('Training score = {0}'.format(self.model.score(X_train), y_train))
-            self.print_message('Evaluation score = {0}'.format(self.model.score(X_eval, y_eval)))
+            self.print_message('Training score = {0}'.format(self.scorer_(self.model, X_train, y_train)))
+            self.print_message('Min. evaluation score = {0}'.format(min_eval_loss))
+            self.print_message('Min. evaluation epoch = {0}'.format(min_eval_epoch))
         elif validate:
             raise Exception('Package does not support evaluation during training.')
         else:
             self.model.fit(X, y)
             t1 = time.time()
             self.print_message('Model training complete in {0:3f} s.'.format(t1 - t0))
-            self.print_message('Training score = {0}'.format(self.model.score(X, y)))
+            self.print_message('Training score = {0}'.format(self.scorer_(self.model, X, y)))
 
     def cross_validate(self, X, y, cv):
         """
