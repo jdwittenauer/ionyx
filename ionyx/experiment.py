@@ -124,11 +124,11 @@ class Experiment(object):
         self.print_message('Beginning model training...')
         self.print_message('X dimensions = {0}'.format(X.shape))
         self.print_message('y dimensions = {0}'.format(y.shape))
+        v = 1 if self.verbose else 0
         t0 = time.time()
 
         if validate and self.package in ['xgboost', 'keras']:
             X_train, X_eval, y_train, y_eval = train_test_split(X, y, test_size=0.1)
-            v = 1 if self.verbose else 0
             training_history = None
             min_eval_loss = None
             min_eval_epoch = None
@@ -172,6 +172,8 @@ class Experiment(object):
         elif validate:
             raise Exception('Package does not support evaluation during training.')
         else:
+            if self.package == 'keras':
+                self.model.set_params(verbose=v)
             self.model.fit(X, y)
             t1 = time.time()
             self.print_message('Model training complete in {0:3f} s.'.format(t1 - t0))
@@ -198,6 +200,8 @@ class Experiment(object):
         self.print_message('y dimensions = {0}'.format(y.shape))
         self.print_message('Cross-validation strategy = {0}'.format(cv))
         t0 = time.time()
+        if self.package == 'keras':
+            self.model.set_params(verbose=0)
         results = cross_validate(self.model, X, y, scoring=self.scoring_metric, cv=cv,
                                  n_jobs=self.n_jobs, verbose=0, return_train_score=True)
         t1 = time.time()
@@ -233,6 +237,9 @@ class Experiment(object):
         self.print_message('y dimensions = {0}'.format(y.shape))
         self.print_message('Cross-validation strategy = {0}'.format(cv))
         t0 = time.time()
+
+        if self.package == 'keras':
+            self.model.set_params(verbose=0)
 
         train_sizes, train_scores, test_scores = learning_curve(self.model, X, y, scoring=self.scoring_metric,
                                                                 cv=cv, n_jobs=self.n_jobs, verbose=0)
@@ -296,6 +303,9 @@ class Experiment(object):
         self.print_message('Cross-validation strategy = {0}'.format(cv))
         t0 = time.time()
 
+        if self.package == 'keras':
+            self.model.set_params(verbose=0)
+
         if search_type == 'grid':
             search = GridSearchCV(self.model, param_grid=param_grid, scoring=self.scoring_metric,
                                   n_jobs=self.n_jobs, cv=cv, refit=self.scoring_metric,
@@ -332,16 +342,13 @@ class Experiment(object):
         self.print_message('Loading model...')
         t0 = time.time()
 
-        if self.package in ['sklearn', 'xgboost']:
+        if self.package in ['sklearn', 'xgboost', 'prophet']:
             model_file = open(filename, 'rb')
             self.model = pickle.load(model_file)
             model_file.close()
         elif self.package == 'keras':
-            # TODO
-            raise Exception('Not implemented.')
-        elif self.package == 'prophet':
-            # TODO
-            raise Exception('Not implemented.')
+            from keras.models import load_model
+            self.model.model = load_model(filename)
         else:
             raise Exception('Package not supported.')
 
@@ -355,21 +362,22 @@ class Experiment(object):
         Parameters
         ----------
         filename : string
-            Location of the file to write.
+            Location of the file to write.  Scikit-learn, XGBoost, and Prophet use pickle to
+            write to disk (use .pkl extension for clarity) while Keras has a built-in save
+            function that uses the HDF5 file format, so Keras models must have a .h5 extension.
         """
         self.print_message('Saving model...')
         t0 = time.time()
 
-        if self.package in ['sklearn', 'xgboost']:
+        if self.package in ['sklearn', 'xgboost', 'prophet']:
             model_file = open(filename, 'wb')
             pickle.dump(self.model, model_file)
             model_file.close()
         elif self.package == 'keras':
-            # TODO
-            raise Exception('Not implemented.')
-        elif self.package == 'prophet':
-            # TODO
-            raise Exception('Not implemented.')
+            if hasattr(self.model, 'model'):
+                self.model.model.save(filename)
+            else:
+                raise Exception('Keras model must be fit before saving.')
         else:
             raise Exception('Package not supported.')
 
