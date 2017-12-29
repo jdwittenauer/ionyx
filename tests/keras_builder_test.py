@@ -1,7 +1,7 @@
 import numpy as np
 from keras.utils.np_utils import to_categorical
 from keras.wrappers.scikit_learn import KerasClassifier
-from ionyx.contrib import KerasBuilder
+from ionyx.contrib.keras_builder import KerasBuilder
 from ionyx.datasets import DataSetLoader
 
 data, X, y = DataSetLoader.load_forest_cover()

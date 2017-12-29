@@ -1,7 +1,9 @@
 from .averaging_regressor import AveragingRegressor
 from .category_encoder import CategoryEncoder
 from .category_to_numeric import CategoryToNumeric
-from .keras_builder import KerasBuilder
+# Excluded to prevent Tensorflow from initializing every time someone
+# uses the package.  Import with ionyx.contrib.keras_builder instead.
+# from .keras_builder import KerasBuilder
 from .logger import Logger
 from .parameter_search_config import ParameterSearchConfig
 from .prophet_regressor import ProphetRegressor

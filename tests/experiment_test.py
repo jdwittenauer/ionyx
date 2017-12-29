@@ -3,7 +3,7 @@ from sklearn.model_selection import KFold
 from xgboost import XGBRegressor
 from keras.wrappers.scikit_learn import KerasRegressor
 from ionyx import Experiment
-from ionyx.contrib import KerasBuilder
+from ionyx.contrib.keras_builder import KerasBuilder
 from ionyx.datasets import DataSetLoader
 
 _, X, y = DataSetLoader.load_property_inspection()
