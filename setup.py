@@ -8,6 +8,7 @@ setup(name='ionyx',
       author_email='jdwittenauer@gmail.com',
       url='https://github.com/jdwittenauer/ionyx',
       license='Apache',
-      install_requires=['numpy', 'scipy', 'matplotlib', 'pandas', 'seaborn', 'scikit-learn', 'xgboost', 'keras'],
+      install_requires=['numpy', 'scipy', 'matplotlib', 'pandas', 'seaborn',
+                        'scikit-learn', 'xgboost', 'keras', 'fbprophet'],
       extras_require={},
       packages=find_packages())

@@ -60,6 +60,7 @@ class Experiment(object):
         self.print_message('Beginning experiment...')
         self.print_message('Package = {0}'.format(package))
         self.print_message('Scoring Metric = {0}'.format(scoring_metric))
+        self.print_message('Evaluation Metric = {0}'.format(eval_metric))
         self.print_message('Parallel Jobs = {0}'.format(n_jobs))
         self.print_message('Model:')
         self.print_message(model, pprint=True)
@@ -90,8 +91,8 @@ class Experiment(object):
             else:
                 self.logger.write('(' + now + ') ' + message)
 
-    def train_model(self, X, y, validate=False, early_stopping=False,
-                    early_stopping_rounds=None, plot_eval_history=False):
+    def train_model(self, X, y, validate=False, early_stopping=False, early_stopping_rounds=None,
+                    plot_eval_history=False, fig_size=16):
         """
         Trains a new model using the provided training data.
 
@@ -116,6 +117,9 @@ class Experiment(object):
 
         plot_eval_history : boolean, optional, default False
             Plot model performance as a function of training time.  Eval must be enabled.
+
+        fig_size : int, optional, default 16
+            Size of the evaluation history plot.
         """
         self.print_message('Beginning model training...')
         self.print_message('X dimensions = {0}'.format(X.shape))
@@ -124,38 +128,41 @@ class Experiment(object):
 
         if validate and self.package in ['xgboost', 'keras']:
             X_train, X_eval, y_train, y_eval = train_test_split(X, y, test_size=0.1)
+            v = 1 if self.verbose else 0
+            training_history = None
+            min_eval_loss = None
+            min_eval_epoch = None
 
             if early_stopping:
                 if self.package == 'xgboost':
-                    # TODO
                     self.model.fit(X_train, y_train, eval_set=[(X_eval, y_eval)], eval_metric=self.eval_metric,
-                                   early_stopping_rounds=early_stopping_rounds)
-                    training_history = xgb.evals_result()['validation_0'][self.scoring_metric]
-                    min_eval_loss = min(training_history)
-                    min_eval_epoch = training_history.index(min(training_history))
+                                   early_stopping_rounds=early_stopping_rounds, verbose=self.verbose)
                 elif self.package == 'keras':
-                    # TODO
-                    raise Exception('Not implemented.')
+                    from keras.callbacks import EarlyStopping
+                    callbacks = [
+                        EarlyStopping(monitor='val_loss', patience=early_stopping_rounds)
+                    ]
+                    training_history = self.model.fit(X_train, y_train, verbose=v, validation_data=(X_eval, y_eval),
+                                                      callbacks=callbacks)
             else:
                 if self.package == 'xgboost':
-                    # TODO
-                    self.model.fit(X_train, y_train, eval_set=[(X_eval, y_eval)], eval_metric=self.eval_metric)
-                    training_history = xgb.evals_result()['validation_0'][self.scoring_metric]
-                    min_eval_loss = min(training_history)
-                    min_eval_epoch = training_history.index(min(training_history))
+                    self.model.fit(X_train, y_train, eval_set=[(X_eval, y_eval)], eval_metric=self.eval_metric,
+                                   verbose=self.verbose)
                 elif self.package == 'keras':
-                    # TODO
-                    training_history = self.model.fit(X_train, y_train, validation_data=(X_eval, y_eval))
-                    min_eval_loss = min(training_history.history['val_loss'])
-                    min_eval_epoch = min(enumerate(training_history.history['loss']), key=lambda x: x[1])[0] + 1
+                    training_history = self.model.fit(X_train, y_train, verbose=v, validation_data=(X_eval, y_eval))
+
+            if self.package == 'xgboost':
+                training_history = self.model.evals_result()['validation_0'][self.eval_metric]
+                min_eval_loss = min(training_history)
+                min_eval_epoch = training_history.index(min(training_history)) + 1
+            elif self.package == 'keras':
+                training_history = training_history.history['val_loss']
+                min_eval_loss = min(training_history)
+                min_eval_epoch = training_history.index(min(training_history)) + 1
 
             if plot_eval_history:
-                if self.package == 'xgboost':
-                    # TODO
-                    raise Exception('Not implemented.')
-                elif self.package == 'keras':
-                    # TODO
-                    raise Exception('Not implemented.')
+                df = pd.DataFrame(training_history, columns=['Eval Loss'])
+                df.plot(figsize=(fig_size, fig_size * 3 / 4))
 
             t1 = time.time()
             self.print_message('Model training complete in {0:3f} s.'.format(t1 - t0))
@@ -325,13 +332,10 @@ class Experiment(object):
         self.print_message('Loading model...')
         t0 = time.time()
 
-        if self.package == 'sklearn':
+        if self.package in ['sklearn', 'xgboost']:
             model_file = open(filename, 'rb')
             self.model = pickle.load(model_file)
             model_file.close()
-        elif self.package == 'xgboost':
-            # TODO
-            raise Exception('Not implemented.')
         elif self.package == 'keras':
             # TODO
             raise Exception('Not implemented.')
@@ -356,13 +360,10 @@ class Experiment(object):
         self.print_message('Saving model...')
         t0 = time.time()
 
-        if self.package == 'sklearn':
+        if self.package in ['sklearn', 'xgboost']:
             model_file = open(filename, 'wb')
             pickle.dump(self.model, model_file)
             model_file.close()
-        elif self.package == 'xgboost':
-            # TODO
-            raise Exception('Not implemented.')
         elif self.package == 'keras':
             # TODO
             raise Exception('Not implemented.')
