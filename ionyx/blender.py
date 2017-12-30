@@ -9,9 +9,10 @@ from sklearn.model_selection import cross_validate
 from sklearn.pipeline import make_pipeline
 from visualizer import Visualizer
 from contrib.averaging_regressor import AveragingRegressor
+from print_message import PrintMessageMixin
 
 
-class Blender(object):
+class Blender(PrintMessageMixin):
     """
     Provides a unified API for training, evaluating, and generating predictions from an
     ensemble of diverse, unrelated models.  There are two general strategies to combining
@@ -43,36 +44,11 @@ class Blender(object):
         will be written to the log file.
     """
     def __init__(self, models, scoring_metric, n_jobs=1, verbose=True, logger=None):
+        PrintMessageMixin.__init__(self, verbose, logger)
         self.models = models
         self.scoring_metric = scoring_metric
         self.n_jobs = n_jobs
-        self.verbose = verbose
-        self.logger = logger
         self.ensemble_ = None
-
-    def print_message(self, message, pprint=False):
-        """
-        Optionally print a message to the console and/or log to a file.
-
-        Parameters
-        ----------
-        message : string
-            Generic text message.
-
-        pprint : boolean, optional, default False
-            Enables stylistic formatting.
-        """
-        now = datetime.datetime.now().replace(microsecond=0).isoformat(' ')
-        if self.verbose:
-            if pprint:
-                pp.pprint(message)
-            else:
-                print('(' + now + ') ' + message)
-        if self.logger:
-            if pprint:
-                self.logger.write(pp.pformat(message))
-            else:
-                self.logger.write('(' + now + ') ' + message)
 
     def build_ensemble(self, X, y, cv, task='classification', retrain=False, **kwargs):
         """

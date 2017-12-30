@@ -8,9 +8,10 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import get_scorer
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.model_selection import cross_validate, learning_curve, train_test_split
+from print_message import PrintMessageMixin
 
 
-class Experiment(object):
+class Experiment(PrintMessageMixin):
     """
     Provides functionality to create and run machine learning experiments.  Designed to
     serve as a "wrapper" for running an experiment.  This class provides methods for
@@ -48,13 +49,12 @@ class Experiment(object):
         will be written to the log file.
     """
     def __init__(self, package, model, scoring_metric, eval_metric=None, n_jobs=1, verbose=True, logger=None):
+        PrintMessageMixin.__init__(self, verbose, logger)
         self.package = package
         self.model = model
         self.scoring_metric = scoring_metric
         self.eval_metric = eval_metric
         self.n_jobs = n_jobs
-        self.verbose = verbose
-        self.logger = logger
         self.scorer_ = get_scorer(self.scoring_metric)
         self.best_model_ = None
         self.print_message('Beginning experiment...')
@@ -66,30 +66,6 @@ class Experiment(object):
         self.print_message(model, pprint=True)
         self.print_message('Parameters:')
         self.print_message(model.get_params(), pprint=True)
-
-    def print_message(self, message, pprint=False):
-        """
-        Optionally print a message to the console and/or log to a file.
-
-        Parameters
-        ----------
-        message : string
-            Generic text message.
-
-        pprint : boolean, optional, default False
-            Enables stylistic formatting.
-        """
-        now = datetime.datetime.now().replace(microsecond=0).isoformat(' ')
-        if self.verbose:
-            if pprint:
-                pp.pprint(message)
-            else:
-                print('(' + now + ') ' + message)
-        if self.logger:
-            if pprint:
-                self.logger.write(pp.pformat(message))
-            else:
-                self.logger.write('(' + now + ') ' + message)
 
     def train_model(self, X, y, validate=False, early_stopping=False, early_stopping_rounds=None,
                     plot_eval_history=False, fig_size=16):

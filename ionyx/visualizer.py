@@ -5,9 +5,10 @@ import seaborn as sb
 from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
 from sklearn.ensemble.partial_dependence import partial_dependence
 from sklearn.preprocessing import LabelEncoder
+from print_message import PrintMessageMixin
 
 
-class Visualizer(object):
+class Visualizer(PrintMessageMixin):
     """
     Provides a number of descriptive functions for creating useful visualizations.  Initialize the
     class by passing in a data set and then call the functions individually to create the plots.
@@ -20,8 +21,16 @@ class Visualizer(object):
 
     fig_size : int, optional, default 16
         Size of the plots.
+
+    verbose : boolean, optional, default True
+        If true, messages will be written to the console.
+
+    logger : object, optional, default None
+        An instantiated log writer with an open file handle.  If provided, messages
+        will be written to the log file.
     """
-    def __init__(self, data, fig_size=16):
+    def __init__(self, data, fig_size=16, verbose=True, logger=None):
+        PrintMessageMixin.__init__(self, verbose, logger)
         self.data = data
         self.fig_size = fig_size
 
@@ -40,6 +49,8 @@ class Visualizer(object):
         grid_size : int, optional, default 4
             Number of vertical/horizontal plots to display in a single window.
         """
+        self.print_message('Generating feature distribution plots...')
+
         if viz_type == 'hist':
             hist = True
             kde = False
@@ -71,7 +82,9 @@ class Visualizer(object):
                                     kde_kws={"shade": True})
             fig.tight_layout()
 
-    def correlations(self, annotate=False):
+        self.print_message('Plot generation complete.')
+
+    def feature_correlations(self, annotate=False):
         """
         Generates a correlation matrix heat map.
 
@@ -80,6 +93,8 @@ class Visualizer(object):
         annotate : boolean, optional, default False
             Annotate the heat map with labels.
         """
+        self.print_message('Generating feature correlations plot...')
+
         corr = self.data.corr()
 
         if annotate:
@@ -92,6 +107,8 @@ class Visualizer(object):
         colormap = sb.blend_palette(sb.color_palette('coolwarm'), as_cmap=True)
         sb.heatmap(corr, mask=mask, cmap=colormap, annot=annotate)
         fig.tight_layout()
+
+        self.print_message('Plot generation complete.')
 
     def variable_relationship(self, quantitative_vars, category_vars=None, joint_viz_type='scatter',
                               pair_viz_type='scatter', factor_viz_type='strip', pair_diag_type='kde'):
@@ -120,6 +137,8 @@ class Visualizer(object):
         pair_diag_type : {'hist', 'kde'}, optional, default 'kde'
             Display type for the diagonal plots in a pair plot.
         """
+        self.print_message('Generating variable relationship plots...')
+
         if quantitative_vars is None or len(quantitative_vars) == 0:
             raise Exception('Must provide at least one quantitative variable.')
 
@@ -172,6 +191,8 @@ class Visualizer(object):
                 sb.pairplot(data=self.data, hue=category_vars[0], vars=quantitative_vars, kind=pair_viz_type,
                             diag_kind=pair_diag_type, size=self.fig_size / len(quantitative_vars))
 
+        self.print_message('Plot generation complete.')
+
     def sequential_relationships(self, time='index', smooth_method=None, window=1, grid_size=4):
         """
         Generates line plots to visualize sequential data.
@@ -190,6 +211,8 @@ class Visualizer(object):
         grid_size : int, optional, default 4
             Number of vertical/horizontal plots to display in a single window.
         """
+        self.print_message('Generating sequential relationship plots...')
+
         data = self.data.fillna(0)
 
         if time is not 'index':
@@ -220,6 +243,8 @@ class Visualizer(object):
                                                  legend=False, title=data.columns[index])
             fig.tight_layout()
 
+        self.print_message('Plot generation complete.')
+
     def transform(self, transform, X_columns, y_column=None, task=None, n_components=2, scatter_size=50):
         """
         Generates plots to visualize the data transformed by a linear or manifold algorithm.
@@ -245,6 +270,8 @@ class Visualizer(object):
         scatter_size : int, optional, default 50
             Size of the points on the scatter plot.
         """
+        self.print_message('Generating transform plot...')
+
         X = self.data[X_columns].values
         X = transform.fit_transform(X)
 
@@ -283,6 +310,8 @@ class Visualizer(object):
                 ax.legend()
                 fig.tight_layout()
 
+        self.print_message('Plot generation complete.')
+
     def feature_importance(self, X_columns, y_column, average=False, task='classification', **kwargs):
         """
         Visualize the predictive importance of each feature in a data set using a trained
@@ -306,6 +335,8 @@ class Visualizer(object):
             Arguments to pass to the scikit-learn gradient boosting model to improve the quality
             of the fit.  If none are provided then the defaults will be used.
         """
+        self.print_message('Generating feature importance plot...')
+
         X = self.data[X_columns]
         y = self.data[y_column]
 
@@ -337,6 +368,8 @@ class Visualizer(object):
         ax.set_xlabel('Relative Importance')
         fig.tight_layout()
 
+        self.print_message('Plot generation complete.')
+
     def partial_dependence(self, X_columns, y_column, var_column, average=False,
                            task='classification', grid_resolution=100, **kwargs):
         """
@@ -367,6 +400,8 @@ class Visualizer(object):
             Arguments to pass to the scikit-learn gradient boosting model to improve the quality
             of the fit.  If none are provided then the defaults will be used.
         """
+        self.print_message('Generating partial dependence plot...')
+
         X = self.data[X_columns]
         y = self.data[y_column]
         index = X_columns.index(var_column)
@@ -398,3 +433,5 @@ class Visualizer(object):
 
         df = pd.DataFrame(np.append(axes, response, axis=1), columns=[var_column, y_column])
         df.plot(x=var_column, y=y_column, kind='line', figsize=(self.fig_size, self.fig_size * 3 / 4))
+
+        self.print_message('Plot generation complete.')
