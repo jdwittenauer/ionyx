@@ -47,8 +47,24 @@ class Experiment(PrintMessageMixin):
     logger : object, optional, default None
         An instantiated log writer with an open file handle.  If provided, messages
         will be written to the log file.
+
+    data : DataFrame, optional, default None
+        The data set to be used for the experiment.  Provides the option to specify the data
+        at initialization vs. passing in training data and labels with each function call.
+        If "data" is specified then "X_columns" and "y_column" must also be specified.
+
+    X_cols : list, optional, default None
+        List of columns in "data" to use for the training set.
+
+    y_col : string, optional, default None
+        Name of the column in "data" to use as a label for supervised learning.
+
+    cv : object, optional, default None
+        A cross-validation strategy.  Accepts all options considered valid by
+        scikit-learn.
     """
-    def __init__(self, package, model, scoring_metric, eval_metric=None, n_jobs=1, verbose=True, logger=None):
+    def __init__(self, package, model, scoring_metric, eval_metric=None, n_jobs=1, verbose=True, logger=None,
+                 data=None, X_cols=None, y_col=None, cv=None):
         PrintMessageMixin.__init__(self, verbose, logger)
         self.package = package
         self.model = model
@@ -57,6 +73,14 @@ class Experiment(PrintMessageMixin):
         self.n_jobs = n_jobs
         self.scorer_ = get_scorer(self.scoring_metric)
         self.best_model_ = None
+        self.data = data
+        if self.data:
+            if X_cols and y_col:
+                self.X = data[X_cols].values
+                self.y = data[y_col].values
+            else:
+                raise Exception('X and y columns must be specified if data set is provided.')
+        self.cv = cv
         self.print_message('Beginning experiment...')
         self.print_message('Package = {0}'.format(package))
         self.print_message('Scoring Metric = {0}'.format(scoring_metric))
@@ -67,18 +91,18 @@ class Experiment(PrintMessageMixin):
         self.print_message('Parameters:')
         self.print_message(model.get_params(), pprint=True)
 
-    def train_model(self, X, y, validate=False, early_stopping=False, early_stopping_rounds=None,
+    def train_model(self, X=None, y=None, validate=False, early_stopping=False, early_stopping_rounds=None,
                     plot_eval_history=False, fig_size=16):
         """
         Trains a new model using the provided training data.
 
         Parameters
         ----------
-        X : array-like
-            Training input samples.
+        X : array-like, optional, default None
+            Training input samples.  Must be specified if no data was provided during initialization.
 
-        y : array-like
-            Target values.
+        y : array-like, optional, default None
+            Target values.  Must be specified if no data was provided during initialization.
 
         validate : boolean, optional, default False
             Evaluate model on a hold-out set during training.
@@ -97,14 +121,19 @@ class Experiment(PrintMessageMixin):
         fig_size : int, optional, default 16
             Size of the evaluation history plot.
         """
+        if X:
+            self.X = X
+        if y:
+            self.y = y
+
         self.print_message('Beginning model training...')
-        self.print_message('X dimensions = {0}'.format(X.shape))
-        self.print_message('y dimensions = {0}'.format(y.shape))
+        self.print_message('X dimensions = {0}'.format(self.X.shape))
+        self.print_message('y dimensions = {0}'.format(self.y.shape))
         v = 1 if self.verbose else 0
         t0 = time.time()
 
         if validate and self.package in ['xgboost', 'keras']:
-            X_train, X_eval, y_train, y_eval = train_test_split(X, y, test_size=0.1)
+            X_train, X_eval, y_train, y_eval = train_test_split(self.X, self.y, test_size=0.1)
             training_history = None
             min_eval_loss = None
             min_eval_epoch = None
@@ -150,35 +179,42 @@ class Experiment(PrintMessageMixin):
         else:
             if self.package == 'keras':
                 self.model.set_params(verbose=v)
-            self.model.fit(X, y)
+            self.model.fit(self.X, self.y)
             t1 = time.time()
             self.print_message('Model training complete in {0:3f} s.'.format(t1 - t0))
-            self.print_message('Training score = {0}'.format(self.scorer_(self.model, X, y)))
+            self.print_message('Training score = {0}'.format(self.scorer_(self.model, self.X, self.y)))
 
-    def cross_validate(self, X, y, cv):
+    def cross_validate(self, X=None, y=None, cv=None):
         """
         Performs cross-validation to estimate the true performance of the model.
 
         Parameters
         ----------
-        X : array-like
-            Training input samples.
+        X : array-like, optional, default None
+            Training input samples.  Must be specified if no data was provided during initialization.
 
-        y : array-like
-            Target values.
+        y : array-like, optional, default None
+            Target values.  Must be specified if no data was provided during initialization.
 
-        cv : object
+        cv : object, optional, default None
             A cross-validation strategy.  Accepts all options considered valid by
-            scikit-learn.
+            scikit-learn.  Must be specified if no cv was passed in during initialization.
         """
+        if X:
+            self.X = X
+        if y:
+            self.y = y
+        if cv:
+            self.cv = cv
+
         self.print_message('Beginning cross-validation...')
-        self.print_message('X dimensions = {0}'.format(X.shape))
-        self.print_message('y dimensions = {0}'.format(y.shape))
-        self.print_message('Cross-validation strategy = {0}'.format(cv))
+        self.print_message('X dimensions = {0}'.format(self.X.shape))
+        self.print_message('y dimensions = {0}'.format(self.y.shape))
+        self.print_message('Cross-validation strategy = {0}'.format(self.cv))
         t0 = time.time()
         if self.package == 'keras':
             self.model.set_params(verbose=0)
-        results = cross_validate(self.model, X, y, scoring=self.scoring_metric, cv=cv,
+        results = cross_validate(self.model, self.X, self.y, scoring=self.scoring_metric, cv=self.cv,
                                  n_jobs=self.n_jobs, verbose=0, return_train_score=True)
         t1 = time.time()
         self.print_message('Cross-validation complete in {0:3f} s.'.format(t1 - t0))
@@ -188,37 +224,45 @@ class Experiment(PrintMessageMixin):
         self.print_message('Training score = {0}'.format(train_score))
         self.print_message('Cross-validation score = {0}'.format(test_score))
 
-    def learning_curve(self, X, y, cv, fig_size=16):
+    def learning_curve(self, X=None, y=None, cv=None, fig_size=16):
         """
         Plots a learning curve showing model performance against both training and validation
         data sets as a function of the number of training samples.
 
         Parameters
         ----------
-        X : array-like
-            Training input samples.
+        X : array-like, optional, default None
+            Training input samples.  Must be specified if no data was provided during initialization.
 
-        y : array-like
-            Target values.
+        y : array-like, optional, default None
+            Target values.  Must be specified if no data was provided during initialization.
 
-        cv : object
+        cv : object, optional, default None
             A cross-validation strategy.  Accepts all options considered valid by
-            scikit-learn.
+            scikit-learn.  Must be specified if no cv was passed in during initialization.
 
         fig_size : int, optional, default 16
             Size of the plot.
         """
+        if X:
+            self.X = X
+        if y:
+            self.y = y
+        if cv:
+            self.cv = cv
+
         self.print_message('Plotting learning curve...')
-        self.print_message('X dimensions = {0}'.format(X.shape))
-        self.print_message('y dimensions = {0}'.format(y.shape))
-        self.print_message('Cross-validation strategy = {0}'.format(cv))
+        self.print_message('X dimensions = {0}'.format(self.X.shape))
+        self.print_message('y dimensions = {0}'.format(self.y.shape))
+        self.print_message('Cross-validation strategy = {0}'.format(self.cv))
         t0 = time.time()
 
         if self.package == 'keras':
             self.model.set_params(verbose=0)
 
-        train_sizes, train_scores, test_scores = learning_curve(self.model, X, y, scoring=self.scoring_metric,
-                                                                cv=cv, n_jobs=self.n_jobs, verbose=0)
+        train_sizes, train_scores, test_scores = learning_curve(self.model, self.X, self.y, cv=self.cv,
+                                                                scoring=self.scoring_metric,
+                                                                n_jobs=self.n_jobs, verbose=0)
         train_scores_mean = np.mean(train_scores, axis=1)
         train_scores_std = np.std(train_scores, axis=1)
         test_scores_mean = np.mean(test_scores, axis=1)
@@ -240,26 +284,27 @@ class Experiment(PrintMessageMixin):
         t1 = time.time()
         self.print_message('Plot generation complete in {0:3f} s.'.format(t1 - t0))
 
-    def param_search(self, X, y, cv, param_grid, search_type='grid', n_iter=100, save_results_path=None):
+    def param_search(self, param_grid, X=None, y=None, cv=None, search_type='grid',
+                     n_iter=100, save_results_path=None):
         """
         Conduct a search over some pre-defined set of hyper-parameter configurations
         to find the best-performing set of parameter.
 
         Parameters
         ----------
-        X : array-like
-            Training input samples.
-
-        y : array-like
-            Target values.
-
-        cv : object
-            A cross-validation strategy.  Accepts all options considered valid by
-            scikit-learn.
-
         param_grid : list, dict
             Parameter search space.  See scikit-learn documentation for GridSearchCV and
             RandomSearchCV for acceptable formatting.
+
+        X : array-like, optional, default None
+            Training input samples.  Must be specified if no data was provided during initialization.
+
+        y : array-like, optional, default None
+            Target values.  Must be specified if no data was provided during initialization.
+
+        cv : object, optional, default None
+            A cross-validation strategy.  Accepts all options considered valid by
+            scikit-learn.  Must be specified if no cv was passed in during initialization.
 
         search_type : {'grid', 'random'}, optional, default 'grid'
             Specifies use of grid search or random search.  Requirements for param_grid are
@@ -273,10 +318,17 @@ class Experiment(PrintMessageMixin):
             Specifies a location to save the full results of the search in format.
             File name should end in .csv.
         """
+        if X:
+            self.X = X
+        if y:
+            self.y = y
+        if cv:
+            self.cv = cv
+
         self.print_message('Beginning hyper-parameter search...')
-        self.print_message('X dimensions = {0}'.format(X.shape))
-        self.print_message('y dimensions = {0}'.format(y.shape))
-        self.print_message('Cross-validation strategy = {0}'.format(cv))
+        self.print_message('X dimensions = {0}'.format(self.X.shape))
+        self.print_message('y dimensions = {0}'.format(self.y.shape))
+        self.print_message('Cross-validation strategy = {0}'.format(self.cv))
         t0 = time.time()
 
         if self.package == 'keras':
@@ -284,16 +336,16 @@ class Experiment(PrintMessageMixin):
 
         if search_type == 'grid':
             search = GridSearchCV(self.model, param_grid=param_grid, scoring=self.scoring_metric,
-                                  n_jobs=self.n_jobs, cv=cv, refit=self.scoring_metric,
+                                  n_jobs=self.n_jobs, cv=self.cv, refit=self.scoring_metric,
                                   verbose=0, return_train_score=True)
         elif search_type == 'random':
             search = RandomizedSearchCV(self.model, param_grid, n_iter=n_iter, scoring=self.scoring_metric,
-                                        n_jobs=self.n_jobs, cv=cv, refit=self.scoring_metric,
+                                        n_jobs=self.n_jobs, cv=self.cv, refit=self.scoring_metric,
                                         verbose=0, return_train_score=True)
         else:
             raise Exception('Search type not supported.')
 
-        search.fit(X, y)
+        search.fit(self.X, self.y)
 
         t1 = time.time()
         self.print_message('Hyper-parameter search complete in {0:3f} s.'.format(t1 - t0))
