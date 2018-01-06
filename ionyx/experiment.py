@@ -74,7 +74,7 @@ class Experiment(PrintMessageMixin):
         self.scorer_ = get_scorer(self.scoring_metric)
         self.best_model_ = None
         self.data = data
-        if self.data:
+        if self.data is not None:
             if X_cols and y_col:
                 self.X = data[X_cols].values
                 self.y = data[y_col].values
@@ -121,9 +121,9 @@ class Experiment(PrintMessageMixin):
         fig_size : int, optional, default 16
             Size of the evaluation history plot.
         """
-        if X:
+        if X is not None:
             self.X = X
-        if y:
+        if y is not None:
             self.y = y
 
         self.print_message('Beginning model training...')
@@ -200,11 +200,11 @@ class Experiment(PrintMessageMixin):
             A cross-validation strategy.  Accepts all options considered valid by
             scikit-learn.  Must be specified if no cv was passed in during initialization.
         """
-        if X:
+        if X is not None:
             self.X = X
-        if y:
+        if y is not None:
             self.y = y
-        if cv:
+        if cv is not None:
             self.cv = cv
 
         self.print_message('Beginning cross-validation...')
@@ -244,11 +244,11 @@ class Experiment(PrintMessageMixin):
         fig_size : int, optional, default 16
             Size of the plot.
         """
-        if X:
+        if X is not None:
             self.X = X
-        if y:
+        if y is not None:
             self.y = y
-        if cv:
+        if cv is not None:
             self.cv = cv
 
         self.print_message('Plotting learning curve...')
@@ -318,11 +318,11 @@ class Experiment(PrintMessageMixin):
             Specifies a location to save the full results of the search in format.
             File name should end in .csv.
         """
-        if X:
+        if X is not None:
             self.X = X
-        if y:
+        if y is not None:
             self.y = y
-        if cv:
+        if cv is not None:
             self.cv = cv
 
         self.print_message('Beginning hyper-parameter search...')

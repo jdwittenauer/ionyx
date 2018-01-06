@@ -110,7 +110,6 @@ class DataSetLoader(object):
         data = data[cols]
 
         X = data.iloc[:, 1:].values
-
         y = data.iloc[:, 0].values
 
         # transform the labels from strings to integers
