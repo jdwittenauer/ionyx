@@ -1,24 +1,103 @@
 from scipy.stats import uniform, randint
+from sklearn.ensemble import ExtraTreesClassifier, GradientBoostingClassifier, RandomForestClassifier
+from sklearn.ensemble import ExtraTreesRegressor, GradientBoostingRegressor, RandomForestRegressor
+from sklearn.linear_model import ElasticNet, LogisticRegression, Ridge
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import LinearSVC, LinearSVR, SVC, SVR
+from xgboost import XGBClassifier, XGBRegressor
+from ..contrib import ProphetRegressor
 
 
-class ParameterSearchConfig(object):
+class ModelConfig(object):
     """
-    Provides pre-defined grid parameters for a variety of models.
+    Provides several helper functions for model definition and parameter tuning.
     """
     def __init__(self):
         pass
 
     @staticmethod
-    def grid_search_config(algorithm):
+    def get_model(task, algorithm):
+        """
+        Defines and returns a model object of the designated type.
+
+        Parameters
+        ----------
+        task : {'classification', 'regression'}, optional, default 'classification'
+            Specifies if the target is continuous or categorical.
+
+        algorithm : {'bayes', 'logistic', 'ridge', 'elastic_net', 'linear_svm', 'svm',
+                     'random_forest', 'extra_trees','gradient_boosting', 'xgboost',
+                     'keras', 'prophet'}
+            Model algorithm to return an object.
+        """
+        if task == 'classification':
+            if algorithm == 'bayes':
+                model = GaussianNB()
+            elif algorithm == 'logistic':
+                model = LogisticRegression()
+            elif algorithm == 'linear_svm':
+                model = LinearSVC()
+            elif algorithm == 'svm':
+                model = SVC()
+            elif algorithm == 'random_forest':
+                model = RandomForestClassifier()
+            elif algorithm == 'extra_trees':
+                model = ExtraTreesClassifier()
+            elif algorithm == 'gradient_boosting':
+                model = GradientBoostingClassifier()
+            elif algorithm == 'xgboost':
+                model = XGBClassifier()
+            elif algorithm == 'keras':
+                from keras.wrappers.scikit_learn import KerasClassifier
+                from ..contrib.keras_builder import KerasBuilder
+                model = KerasClassifier(build_fn=KerasBuilder.build_dense_model)
+            else:
+                raise Exception('No model defined for {0}'.format(algorithm))
+        elif task == 'regression':
+            if algorithm == 'ridge':
+                model = Ridge()
+            elif algorithm == 'elastic_net':
+                model = ElasticNet()
+            elif algorithm == 'linear_svm':
+                model = LinearSVR()
+            elif algorithm == 'svm':
+                model = SVR()
+            elif algorithm == 'random_forest':
+                model = RandomForestRegressor()
+            elif algorithm == 'extra_trees':
+                model = ExtraTreesRegressor()
+            elif algorithm == 'gradient_boosting':
+                model = GradientBoostingRegressor()
+            elif algorithm == 'xgboost':
+                model = XGBRegressor()
+            elif algorithm == 'keras':
+                from keras.wrappers.scikit_learn import KerasRegressor
+                from ..contrib.keras_builder import KerasBuilder
+                model = KerasRegressor(build_fn=KerasBuilder.build_dense_model)
+            elif algorithm == 'prophet':
+                model = ProphetRegressor()
+            else:
+                raise Exception('No model defined for {0}'.format(algorithm))
+        else:
+            raise Exception('No task defined for {0}'.format(task))
+
+        return model
+
+    @staticmethod
+    def grid_search_params(task, algorithm):
         """
         Returns a pre-defined grid of hyper-parameters for the specific model.  Use this version
         for an exhaustive grid search.
 
         Parameters
         ----------
-        algorithm : {'logistic', 'linear', 'svm', 'random_forest', 'extra_trees',
-                     'gradient_boosting', 'xgboost', 'keras', 'prophet'}
-            Model algorithm to provide a grid of parameter settings for.
+        task : {'classification', 'regression'}, optional, default 'classification'
+            Specifies if the target is continuous or categorical.
+
+        algorithm : {'bayes', 'logistic', 'ridge', 'elastic_net', 'linear_svm', 'svm',
+                     'random_forest', 'extra_trees','gradient_boosting', 'xgboost',
+                     'keras', 'prophet'}
+            Model algorithm to provide a grid of parameter settings.
         """
         if algorithm == 'logistic':
             param_grid = [
@@ -121,16 +200,20 @@ class ParameterSearchConfig(object):
         return param_grid
 
     @staticmethod
-    def random_search_config(algorithm):
+    def random_search_params(task, algorithm):
         """
         Returns a pre-defined grid of hyper-parameters for the specific model.  Use this version
         for a random search using scipy distributions.
 
         Parameters
         ----------
-        algorithm : {'logistic', 'linear', 'svm', 'random_forest', 'extra_trees',
-                     'gradient_boosting', 'xgboost', 'keras', 'prophet'}
-            Model algorithm to provide a grid of parameter settings for.
+        task : {'classification', 'regression'}, optional, default 'classification'
+            Specifies if the target is continuous or categorical.
+
+        algorithm : {'bayes', 'logistic', 'ridge', 'elastic_net', 'linear_svm', 'svm',
+                     'random_forest', 'extra_trees','gradient_boosting', 'xgboost',
+                     'keras', 'prophet'}
+            Model algorithm to provide a grid of parameter settings.
         """
         if algorithm == 'logistic':
             param_grid = [
