@@ -63,6 +63,14 @@ class Experiment(PrintMessageMixin):
     cv : object, optional, default None
         A cross-validation strategy.  Accepts all options considered valid by
         scikit-learn.
+
+    Attributes
+    ----------
+    scorer_ : object
+        Scikit-learn scoring function for the provided scoring metric.
+
+    best_model_ : object
+        The best model found during a parameter search.
     """
     def __init__(self, package, model, scoring_metric, eval_metric=None, n_jobs=1,
                  verbose=True, logger=None, data=None, X_cols=None, y_col=None, cv=None):

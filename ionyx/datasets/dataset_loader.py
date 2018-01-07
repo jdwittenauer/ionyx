@@ -32,7 +32,8 @@ class DataSetLoader(object):
         y2 : array-like
             Second variable target values.
         """
-        file_location = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'bike_sharing.zip')
+        file_location = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                     'data', 'bike_sharing.zip')
         z = ZipFile(file_location)
         data = pd.read_csv(z.open('train.csv'))
         data['datetime'] = pd.to_datetime(data['datetime'])
@@ -53,7 +54,8 @@ class DataSetLoader(object):
     @staticmethod
     def load_forest_cover():
         """
-        Loads and returns the data set from Kaggle's Forest Cover Type Prediction competition.
+        Loads and returns the data set from Kaggle's Forest Cover Type Prediction
+        competition.
         Link: https://www.kaggle.com/c/forest-cover-type-prediction
 
         Returns
@@ -67,7 +69,8 @@ class DataSetLoader(object):
         y : array-like
             Target values.
         """
-        file_location = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'forest_cover.zip')
+        file_location = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                     'data', 'forest_cover.zip')
         z = ZipFile(file_location)
         data = pd.read_csv(z.open('train.csv'))
         data = data.set_index('Id')
@@ -85,7 +88,8 @@ class DataSetLoader(object):
     @staticmethod
     def load_otto_group():
         """
-        Loads and returns the data set from Kaggle's Otto Group Product Classification competition.
+        Loads and returns the data set from Kaggle's Otto Group Product Classification
+        competition.
         Link: https://www.kaggle.com/c/otto-group-product-classification-challenge
 
         Returns
@@ -99,7 +103,8 @@ class DataSetLoader(object):
         y : array-like
             Target values.
         """
-        file_location = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'otto_group.zip')
+        file_location = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                     'data', 'otto_group.zip')
         z = ZipFile(file_location)
         data = pd.read_csv(z.open('train.csv'))
         data = data.set_index('id')
@@ -121,7 +126,8 @@ class DataSetLoader(object):
     @staticmethod
     def load_property_inspection():
         """
-        Loads and returns the data set from Kaggle's Property Inspection Prediction competition.
+        Loads and returns the data set from Kaggle's Property Inspection Prediction
+        competition.
         Link: https://www.kaggle.com/c/liberty-mutual-group-property-inspection-prediction
 
         Returns
@@ -135,7 +141,8 @@ class DataSetLoader(object):
         y : array-like
             Target values.
         """
-        file_location = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'property_inspection.zip')
+        file_location = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                     'data', 'property_inspection.zip')
         z = ZipFile(file_location)
         data = pd.read_csv(z.open('train.csv'))
         data = data.set_index('Id')
@@ -165,7 +172,8 @@ class DataSetLoader(object):
         y : array-like
             Target values.
         """
-        file_location = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'time_series.zip')
+        file_location = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                     'data', 'time_series.zip')
         z = ZipFile(file_location)
         data = pd.read_csv(z.open('train.csv'))
         data['ds'] = pd.to_datetime(data['ds'])

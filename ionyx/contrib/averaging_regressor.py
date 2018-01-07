@@ -30,6 +30,14 @@ class AveragingRegressor(_BaseComposition, RegressorMixin):
     n_jobs : int, optional, default 1
         Number of jobs to run in parallel for "fit".  If -1, then the number of jobs
         is set to the number of cores.
+
+    Attributes
+    ----------
+    estimators_ : list
+        Collection of fitted estimators.
+
+    named_estimators_ : dict
+        Mapping of estimator names to fitted estimators.
     """
     def __init__(self, estimators, weights=None, n_jobs=1):
         self.estimators = estimators

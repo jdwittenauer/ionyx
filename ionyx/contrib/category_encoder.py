@@ -14,6 +14,11 @@ class CategoryEncoder(object):
         A list of integers representing the column indices to apply the transform to.
         If None, the transform will attempt to apply itself to all columns with string
         values.
+
+    Attributes
+    ----------
+    encoders_ : dict
+        Fitted encoders.
     """
     def __init__(self, categorical_features=None):
         self.categorical_features = categorical_features

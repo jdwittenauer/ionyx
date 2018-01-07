@@ -16,6 +16,11 @@ class CategoryToNumeric(object):
 
     metric : {'mean', 'median', 'std'}, optional, default 'mean'
         The method used to calculate the replacement value for a category.
+
+    Attributes
+    ----------
+    feature_map_ : dict
+        Mapping of categorical to target values.
     """
     def __init__(self, categorical_features, metric='mean'):
         self.categorical_features = categorical_features

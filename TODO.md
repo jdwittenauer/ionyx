@@ -6,8 +6,4 @@
 - Optimizer test cases
 - Finish model config class
 - Finish blender code/tests
-- Consistency checks
-    - API usage
-    - Documentation
-    - Attribute handling
-    - Error checking
+- Error checking

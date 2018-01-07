@@ -42,6 +42,12 @@ class Blender(PrintMessageMixin):
     logger : object, optional, default None
         An instantiated log writer with an open file handle.  If provided, messages
         will be written to the log file.
+
+    Attributes
+    ----------
+    ensemble_ : object
+        Fitted ensemble model.  Only available after using one of the "build ensemble"
+        functions with retrain set to True.
     """
     def __init__(self, models, scoring_metric, n_jobs=1, verbose=True, logger=None):
         PrintMessageMixin.__init__(self, verbose, logger)
@@ -107,101 +113,101 @@ class Blender(PrintMessageMixin):
             t1 = time.time()
             self.print_message('Ensemble training complete in {0:3f} s.'.format(t1 - t0))
 
-    # def build_stacking_ensemble(self, X, y, cv, layer_cv, layer_mask, retrain=False):
-    #     """
-    #     Construct a stacked ensemble of models.  Stacking uses model predictions from
-    #     lower layers as inputs to a model at a higher layer.  This technique can be used
-    #     for both classification and regression.
-    #
-    #     Parameters
-    #     ----------
-    #     X : array-like
-    #         Training input samples.
-    #
-    #     y : array-like
-    #         Target values.
-    #
-    #     cv : object
-    #         Top-level cross-validation strategy.  Accepts all options considered valid by
-    #         scikit-learn.
-    #
-    #     layer_cv : object
-    #         A cross-validation strategy used specifically for the stacking layers.  This
-    #         determines how the out-of-sample predictions are generated that get passed to
-    #         the next layer.  Accepts all options considered valid by scikit-learn.
-    #
-    #     layer_mask : list
-    #         A list of layer identifiers.  The index corresponds to the index of the model
-    #         tuple in the "models" list.
-    #
-    #     retrain : boolean, optional, default False
-    #         Re-fit the model at the end using all available data.
-    #     """
-    #     self.print_message('Beginning stacking ensemble training...')
-    #     self.print_message('X dimensions = {0}'.format(X.shape))
-    #     self.print_message('y dimensions = {0}'.format(y.shape))
-    #     self.print_message('Cross-validation strategy = {0}'.format(cv))
-    #     t0 = time.time()
-    #
-    #     layers = []
-    #     layer_idx = list(set(layer_mask))
-    #     for i in (range(len(layer_idx)) - 1):
-    #         layer_models = [x for idx, x in enumerate(self.models)
-    #                         if layer_mask[idx] == layer_idx[i]]
-    #         layer = make_stack_layer(layer_models, cv=layer_cv, n_jobs=self.n_jobs)
-    #         layers.append(layer)
-    #
-    #     layers.append(self.models[-1][1])
-    #     pipe = make_pipeline(layers)
-    #     results = cross_validate(pipe, X, y, scoring=self.scoring_metric, cv=cv,
-    #                              n_jobs=self.n_jobs, verbose=0, return_train_score=True)
-    #
-    #     t1 = time.time()
-    #     self.print_message('Ensemble cross-validation complete in {0:3f} s.'.format(t1 - t0))
-    #
-    #     train_score = np.mean(results['train_score'])
-    #     test_score = np.mean(results['test_score'])
-    #     self.print_message('Training score = {0}'.format(train_score))
-    #     self.print_message('Cross-validation score = {0}'.format(test_score))
-    #
-    #     if retrain:
-    #         self.print_message('Re-training ensemble on full data set...')
-    #         t0 = time.time()
-    #         pipe.fit(X, y)
-    #         self.ensemble_ = pipe
-    #         t1 = time.time()
-    #         self.print_message('Ensemble training complete in {0:3f} s.'.format(t1 - t0))
-    #
-    # def model_correlations(self, X, y, cv):
-    #     """
-    #     Visualize how correlated each model's predictions are with one another.
-    #     Correlations are based on out-of-sample predictions using cross-validation to
-    #     compare real-world model performance.
-    #
-    #     Parameters
-    #     ----------
-    #     X : array-like
-    #         Training input samples.
-    #
-    #     y : array-like
-    #         Target values.
-    #
-    #     cv : object
-    #         A cross-validation strategy.  Accepts all options considered valid by
-    #         scikit-learn.
-    #     """
-    #     self.print_message('Beginning model correlation testing...')
-    #     self.print_message('X dimensions = {0}'.format(X.shape))
-    #     self.print_message('y dimensions = {0}'.format(y.shape))
-    #     self.print_message('Cross-validation strategy = {0}'.format(cv))
-    #     t0 = time.time()
-    #
-    #     names, _ = zip(*self.models)
-    #     layer = make_stack_layer(self.models, cv=cv, n_jobs=self.n_jobs)
-    #     predictions = layer.fit_transform(X, y)
-    #     df = pd.DataFrame(predictions, columns=names)
-    #     viz = Visualizer(df)
-    #     viz.visualize_correlations()
-    #
-    #     t1 = time.time()
-    #     self.print_message('Correlation testing complete in {0:3f} s.'.format(t1 - t0))
+    def build_stacking_ensemble(self, X, y, cv, layer_cv, layer_mask, retrain=False):
+        """
+        Construct a stacked ensemble of models.  Stacking uses model predictions from
+        lower layers as inputs to a model at a higher layer.  This technique can be used
+        for both classification and regression.
+
+        Parameters
+        ----------
+        X : array-like
+            Training input samples.
+
+        y : array-like
+            Target values.
+
+        cv : object
+            Top-level cross-validation strategy.  Accepts all options considered valid by
+            scikit-learn.
+
+        layer_cv : object
+            A cross-validation strategy used specifically for the stacking layers.  This
+            determines how the out-of-sample predictions are generated that get passed to
+            the next layer.  Accepts all options considered valid by scikit-learn.
+
+        layer_mask : list
+            A list of layer identifiers.  The index corresponds to the index of the model
+            tuple in the "models" list.
+
+        retrain : boolean, optional, default False
+            Re-fit the model at the end using all available data.
+        """
+        self.print_message('Beginning stacking ensemble training...')
+        self.print_message('X dimensions = {0}'.format(X.shape))
+        self.print_message('y dimensions = {0}'.format(y.shape))
+        self.print_message('Cross-validation strategy = {0}'.format(cv))
+        t0 = time.time()
+
+        layers = []
+        layer_idx = list(set(layer_mask))
+        for i in (range(len(layer_idx)) - 1):
+            layer_models = [x for idx, x in enumerate(self.models)
+                            if layer_mask[idx] == layer_idx[i]]
+            layer = make_stack_layer(layer_models, cv=layer_cv, n_jobs=self.n_jobs)
+            layers.append(layer)
+
+        layers.append(self.models[-1][1])
+        ensemble = make_pipeline(layers)
+        results = cross_validate(ensemble, X, y, scoring=self.scoring_metric, cv=cv,
+                                 n_jobs=self.n_jobs, verbose=0, return_train_score=True)
+
+        t1 = time.time()
+        self.print_message('Ensemble cross-validation complete in {0:3f} s.'.format(t1 - t0))
+
+        train_score = np.mean(results['train_score'])
+        test_score = np.mean(results['test_score'])
+        self.print_message('Training score = {0}'.format(train_score))
+        self.print_message('Cross-validation score = {0}'.format(test_score))
+
+        if retrain:
+            self.print_message('Re-training ensemble on full data set...')
+            t0 = time.time()
+            ensemble.fit(X, y)
+            self.ensemble_ = ensemble
+            t1 = time.time()
+            self.print_message('Ensemble training complete in {0:3f} s.'.format(t1 - t0))
+
+    def model_correlations(self, X, y, cv):
+        """
+        Visualize how correlated each model's predictions are with one another.
+        Correlations are based on out-of-sample predictions using cross-validation to
+        compare real-world model performance.
+
+        Parameters
+        ----------
+        X : array-like
+            Training input samples.
+
+        y : array-like
+            Target values.
+
+        cv : object
+            A cross-validation strategy.  Accepts all options considered valid by
+            scikit-learn.
+        """
+        self.print_message('Beginning model correlation testing...')
+        self.print_message('X dimensions = {0}'.format(X.shape))
+        self.print_message('y dimensions = {0}'.format(y.shape))
+        self.print_message('Cross-validation strategy = {0}'.format(cv))
+        t0 = time.time()
+
+        names, _ = zip(*self.models)
+        layer = make_stack_layer(self.models, cv=cv, n_jobs=self.n_jobs)
+        predictions = layer.fit_transform(X, y)
+        df = pd.DataFrame(predictions, columns=names)
+        viz = Visualizer(df)
+        viz.visualize_correlations()
+
+        t1 = time.time()
+        self.print_message('Correlation testing complete in {0:3f} s.'.format(t1 - t0))

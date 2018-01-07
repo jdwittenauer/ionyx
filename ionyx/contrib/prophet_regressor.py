@@ -61,6 +61,15 @@ class ProphetRegressor(BaseEstimator, RegressorMixin):
 
     uncertainty_samples: Number of simulated draws used to estimate
         uncertainty intervals.
+
+    Attributes
+    ----------
+    model_ : object
+        Underlying Prophet model.
+
+    preds_ : object
+        Prediction DataFrame returned by the Prophet model after forecasting.
+        Contains various extra columns that may be useful.
     """
     def __init__(
             self,
