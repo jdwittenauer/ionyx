@@ -3,10 +3,11 @@ import numpy as np
 
 class CategoryToNumeric(object):
     """
-    Transform class that replaces a categorical value with a representative target value for instances
-    that belong to that category.  This technique is useful as a method to turn categorical features
-    into numeric values for use in an estimator, and can be viewed as an alternative approach to
-    one-hot encoding.  Only suitable for regression tasks.
+    Transform class that replaces a categorical value with a representative target value
+    for instances that belong to that category.  This technique is useful as a method to
+    turn categorical features into numeric values for use in an estimator, and can be
+    viewed as an alternative approach to one-hot encoding.  Only suitable for regression
+    tasks.
 
     Parameters
     ----------

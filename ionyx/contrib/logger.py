@@ -1,7 +1,8 @@
 class Logger(object):
     """
-    Wrapper class that permits writing to a log file as well as printing to the console at the same time using
-    a single convenience method.  Instantiating this class opens a file connection that must be closed.
+    Wrapper class that permits writing to a log file as well as printing to the console
+    at the same time using a single convenience method.  Instantiating this class opens
+    a file connection that must be closed.
 
     Parameters
     ----------

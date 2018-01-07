@@ -42,8 +42,9 @@ class Utils(object):
     @staticmethod
     def load_csv_data(filename, dtype=None, index=None, convert_to_date=False):
         """
-        Load a csv data file into a data frame.  This function wraps the Pandas read_csv function
-        with logic to set the index for the data frame and convert fields to date types if necessary.
+        Load a csv data file into a data frame.  This function wraps the Pandas read_csv
+        function with logic to set the index for the data frame and convert fields to
+        date types if necessary.
 
         Parameters
         ----------
@@ -78,11 +79,12 @@ class Utils(object):
         return data
 
     @staticmethod
-    def load_sql_data(engine, table=None, query=None, index=None, params=None, date_columns=None):
+    def load_sql_data(engine, table=None, query=None, index=None, params=None,
+                      date_columns=None):
         """
-        Reads SQL data using the specified table or query and returns a data frame with the
-        results.  This function wraps Pandas' read_sql function with logic to allow for a
-        table name to be specified instead of a query.
+        Reads SQL data using the specified table or query and returns a data frame with
+        the results.  This function wraps Pandas' read_sql function with logic to allow
+        for a table name to be specified instead of a query.
 
         Parameters
         ----------
@@ -90,14 +92,16 @@ class Utils(object):
             A SQLAlchemy engine with a connection to the database to read from.
 
         table : string, optional, default None
-            Name of the table to read from if reading entire table contents.  Specify either
-            table or query parameter.
+            Name of the table to read from if reading entire table contents.  Specify
+            either table or query parameter.
 
         query : string, optional, default None
-            SQL query to run against the database.  Specify either table or query parameter.
+            SQL query to run against the database.  Specify either table or query
+            parameter.
 
         index : string or array-like, optional, default None
-            Specify either the column or list of columns to set as the index of the data frame.
+            Specify either the column or list of columns to set as the index of the
+            data frame.
 
         params: array-like, optional, default None
             List of input parameters for the database to evaluate with the SQL query.
@@ -111,7 +115,8 @@ class Utils(object):
             Data frame containing the results of the query.
         """
         if query is not None:
-            data = pd.read_sql(query, engine, index_col=index, params=params, parse_dates=date_columns)
+            data = pd.read_sql(query, engine, index_col=index, params=params,
+                               parse_dates=date_columns)
         else:
             data = pd.read_sql('SELECT * FROM ' + table, engine, index_col=index,
                                params=params, parse_dates=date_columns)

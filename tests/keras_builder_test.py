@@ -16,7 +16,8 @@ score = model.evaluate(X, to_categorical(y, n_classes))
 print('Model score = {0}'.format(score[1]))
 
 estimator = KerasClassifier(build_fn=KerasBuilder.build_dense_model, input_size=X.shape[1],
-                            output_size=n_classes, loss='categorical_crossentropy', metrics=['accuracy'])
+                            output_size=n_classes, loss='categorical_crossentropy',
+                            metrics=['accuracy'])
 estimator.fit(X, to_categorical(y, n_classes))
 score = estimator.score(X, to_categorical(y, n_classes))
 print('Estimator score = {0}'.format(score))

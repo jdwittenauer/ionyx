@@ -86,8 +86,8 @@ class ModelConfig(object):
     @staticmethod
     def grid_search_params(task, algorithm):
         """
-        Returns a pre-defined grid of hyper-parameters for the specific model.  Use this version
-        for an exhaustive grid search.
+        Returns a pre-defined grid of hyper-parameters for the specific model.  Use this
+        version for an exhaustive grid search.
 
         Parameters
         ----------
@@ -169,17 +169,27 @@ class ModelConfig(object):
                 {
                     'layer_size': [32, 64, 128, 256, 512, 1024],
                     'n_hidden_layers': [1, 2, 3, 4, 5, 6],
-                    'activation_function': ['elu', 'selu', 'softplus', 'softsign', 'relu', 'tanh', 'sigmoid',
-                                            'hard_sigmoid', 'linear'],
-                    'output_activation': ['elu', 'selu', 'softplus', 'softsign', 'relu', 'tanh', 'sigmoid',
-                                          'hard_sigmoid', 'linear'],
+                    'activation_function': ['elu', 'selu', 'softplus', 'softsign', 'relu', 'tanh',
+                                            'sigmoid', 'hard_sigmoid', 'linear'],
+                    'output_activation': ['elu', 'selu', 'softplus', 'softsign', 'relu', 'tanh',
+                                          'sigmoid', 'hard_sigmoid', 'linear'],
                     'batch_normalization': [True, False],
                     'dropout': [0, 0.5],
                     'optimizer': ['sgd', 'rmsprop', 'adagrad', 'adadelta', 'adam', 'adamax', 'nadam'],
-                    'loss': ['mean_squared_error', 'mean_absolute_error', 'mean_absolute_percentage_error',
-                             'mean_squared_logarithmic_error', 'squared_hinge', 'hinge', 'categorical_hinge',
-                             'logcosh', 'categorical_crossentropy', 'sparse_categorical_crossentropy',
-                             'binary_crossentropy', 'kullback_leibler_divergence', 'poisson', 'cosine_proximity'],
+                    'loss': ['mean_squared_error',
+                             'mean_absolute_error',
+                             'mean_absolute_percentage_error',
+                             'mean_squared_logarithmic_error',
+                             'squared_hinge',
+                             'hinge',
+                             'categorical_hinge',
+                             'logcosh',
+                             'categorical_crossentropy',
+                             'sparse_categorical_crossentropy',
+                             'binary_crossentropy',
+                             'kullback_leibler_divergence',
+                             'poisson',
+                             'cosine_proximity'],
                     'batch_size': [16, 32, 64, 128, 256],
                     'nb_epoch': [10, 30, 100, 300, 1000]
                 }
@@ -202,8 +212,8 @@ class ModelConfig(object):
     @staticmethod
     def random_search_params(task, algorithm):
         """
-        Returns a pre-defined grid of hyper-parameters for the specific model.  Use this version
-        for a random search using scipy distributions.
+        Returns a pre-defined grid of hyper-parameters for the specific model.  Use this
+        version for a random search using scipy distributions.
 
         Parameters
         ----------
@@ -281,17 +291,27 @@ class ModelConfig(object):
                 {
                     'layer_size': randint(32, 1024),
                     'n_hidden_layers': randint(1, 6),
-                    'activation_function': ['elu', 'selu', 'softplus', 'softsign', 'relu', 'tanh', 'sigmoid',
-                                            'hard_sigmoid', 'linear'],
-                    'output_activation': ['elu', 'selu', 'softplus', 'softsign', 'relu', 'tanh', 'sigmoid',
-                                          'hard_sigmoid', 'linear'],
+                    'activation_function': ['elu', 'selu', 'softplus', 'softsign', 'relu', 'tanh',
+                                            'sigmoid', 'hard_sigmoid', 'linear'],
+                    'output_activation': ['elu', 'selu', 'softplus', 'softsign', 'relu', 'tanh',
+                                          'sigmoid', 'hard_sigmoid', 'linear'],
                     'batch_normalization': [True, False],
                     'dropout': [0, 0.5],
                     'optimizer': ['sgd', 'rmsprop', 'adagrad', 'adadelta', 'adam', 'adamax', 'nadam'],
-                    'loss': ['mean_squared_error', 'mean_absolute_error', 'mean_absolute_percentage_error',
-                             'mean_squared_logarithmic_error', 'squared_hinge', 'hinge', 'categorical_hinge',
-                             'logcosh', 'categorical_crossentropy', 'sparse_categorical_crossentropy',
-                             'binary_crossentropy', 'kullback_leibler_divergence', 'poisson', 'cosine_proximity'],
+                    'loss': ['mean_squared_error',
+                             'mean_absolute_error',
+                             'mean_absolute_percentage_error',
+                             'mean_squared_logarithmic_error',
+                             'squared_hinge',
+                             'hinge',
+                             'categorical_hinge',
+                             'logcosh',
+                             'categorical_crossentropy',
+                             'sparse_categorical_crossentropy',
+                             'binary_crossentropy',
+                             'kullback_leibler_divergence',
+                             'poisson',
+                             'cosine_proximity'],
                     'batch_size': randint(16, 256),
                     'nb_epoch': randint(10, 1000)
                 }

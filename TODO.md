@@ -10,5 +10,4 @@
     - API usage
     - Documentation
     - Attribute handling
-    - Line length
     - Error checking

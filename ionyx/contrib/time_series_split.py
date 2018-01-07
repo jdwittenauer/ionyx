@@ -5,38 +5,28 @@ from sklearn.model_selection._split import _BaseKFold
 
 
 class TimeSeriesSplit(_BaseKFold):
-    """Time Series cross-validator
-    Provides train/test indices to split time series data samples
-    that are observed at fixed time intervals, in train/test sets.
-    In each split, test indices must be higher than before, and thus shuffling
-    in cross validator is inappropriate.
-    This cross-validation object is a variation of :class:`KFold`.
-    In the kth split, it returns first k folds as train set and the
-    (k+1)th fold as test set.
-    Note that unlike standard cross-validation methods, successive
-    training sets are supersets of those that come before them.
-    Read more in the :ref:`User Guide <cross_validation>`.
+    """
+    Provides train/test indices to split time series data samples that are observed at
+    fixed time intervals, in train/test sets. In each split, test indices must be higher
+    than before, and thus shuffling in cross validator is inappropriate. This
+    cross-validation object is a variation of k-fold cross-validation. In the kth split,
+    it returns first k folds as train set and the (k+1)th fold as test set. Note that
+    unlike standard cross-validation methods, successive training sets are supersets of
+    those that come before them.
 
     Parameters
     ----------
-    n_splits : int, default=3
+    n_splits : int, optional, default 3
         Number of splits. Must be at least 1.
-    min_train_size : int, optional
-        Minimum size for a single training set.
-    max_train_size : int, optional
-        Maximum size for a single training set.
 
-    Notes
-    -----
-    The training set has size ``i * n_samples // (n_splits + 1)
-    + n_samples % (n_splits + 1)`` in the ``i``th split,
-    with a test set of size ``n_samples//(n_splits + 1)``,
-    where ``n_samples`` is the number of samples.
+    min_train_size : int, optional, default None
+        Minimum size for a single training set.
+
+    max_train_size : int, optional, default None
+        Maximum size for a single training set.
     """
     def __init__(self, n_splits=3, max_train_size=None, min_train_size=None):
-        super(TimeSeriesSplit, self).__init__(n_splits,
-                                              shuffle=False,
-                                              random_state=None)
+        super(TimeSeriesSplit, self).__init__(n_splits, shuffle=False, random_state=None)
         self.max_train_size = max_train_size
         self.min_train_size = min_train_size
 
@@ -46,11 +36,13 @@ class TimeSeriesSplit(_BaseKFold):
         Parameters
         ----------
         X : array-like, shape (n_samples, n_features)
-            Training data, where n_samples is the number of samples
-            and n_features is the number of features.
-        y : array-like, shape (n_samples,)
+            Training data, where n_samples is the number of samples and n_features is the
+            number of features.
+
+        y : array-like, shape (n_samples,), optional, default None
             Always ignored, exists for compatibility.
-        groups : array-like, with shape (n_samples,), optional
+
+        groups : array-like, with shape (n_samples,), optional, default None
             Always ignored, exists for compatibility.
 
         Returns
@@ -59,12 +51,6 @@ class TimeSeriesSplit(_BaseKFold):
             The training set indices for that split.
         test : ndarray
             The testing set indices for that split.
-
-        Notes
-        -----
-        Randomized CV splitters may return different results for each call of
-        split. You can make the results identical by setting ``random_state``
-        to an integer.
         """
         X, y, groups = indexable(X, y, groups)
         n_samples = _num_samples(X)

@@ -12,41 +12,53 @@ class ProphetRegressor(BaseEstimator, RegressorMixin):
     ----------
     growth: String 'linear' or 'logistic' to specify a linear or logistic
         trend.
+
     changepoints: List of dates at which to include potential changepoints. If
         not specified, potential changepoints are selected automatically.
+
     n_changepoints: Number of potential changepoints to include. Not used
         if input `changepoints` is supplied. If `changepoints` is not supplied,
         then n_changepoints potential changepoints are selected uniformly from
         the first 80 percent of the history.
+
     yearly_seasonality: Fit yearly seasonality.
         Can be 'auto', True, False, or a number of Fourier terms to generate.
+
     weekly_seasonality: Fit weekly seasonality.
         Can be 'auto', True, False, or a number of Fourier terms to generate.
+
     daily_seasonality: Fit daily seasonality.
         Can be 'auto', True, False, or a number of Fourier terms to generate.
+
     holidays: pd.DataFrame with columns holiday (string) and ds (date type)
         and optionally columns lower_window and upper_window which specify a
         range of days around the date to be included as holidays.
         lower_window=-2 will include 2 days prior to the date as holidays. Also
         optionally can have a column prior_scale specifying the prior scale for
         that holiday.
+
     seasonality_prior_scale: Parameter modulating the strength of the
         seasonality model. Larger values allow the model to fit larger seasonal
         fluctuations, smaller values dampen the seasonality. Can be specified
         for individual seasonalities using add_seasonality.
+
     holidays_prior_scale: Parameter modulating the strength of the holiday
         components model, unless overridden in the holidays input.
+
     changepoint_prior_scale: Parameter modulating the flexibility of the
         automatic changepoint selection. Large values will allow many
         changepoints, small values will allow few changepoints.
+
     mcmc_samples: Integer, if greater than 0, will do full Bayesian inference
         with the specified number of MCMC samples. If 0, will do MAP
         estimation.
+
     interval_width: Float, width of the uncertainty intervals provided
         for the forecast. If mcmc_samples=0, this will be only the uncertainty
         in the trend using the MAP estimate of the extrapolated generative
         model. If mcmc.samples>0, this will be integrated over all model
         parameters, which will include uncertainty in seasonality.
+
     uncertainty_samples: Number of simulated draws used to estimate
         uncertainty intervals.
     """
@@ -114,7 +126,7 @@ class ProphetRegressor(BaseEstimator, RegressorMixin):
         Parameters
         ----------
         X : array, shape = (n_samples,)
-            Dates to generate predictions for.
+            Dates to generate predictions.
 
         Returns
         -------

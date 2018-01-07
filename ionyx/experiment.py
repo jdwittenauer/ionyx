@@ -49,9 +49,10 @@ class Experiment(PrintMessageMixin):
         will be written to the log file.
 
     data : DataFrame, optional, default None
-        The data set to be used for the experiment.  Provides the option to specify the data
-        at initialization vs. passing in training data and labels with each function call.
-        If "data" is specified then "X_columns" and "y_column" must also be specified.
+        The data set to be used for the experiment.  Provides the option to specify the
+        data at initialization vs. passing in training data and labels with each
+        function call. If "data" is specified then "X_columns" and "y_column" must also
+        be specified.
 
     X_cols : list, optional, default None
         List of columns in "data" to use for the training set.
@@ -63,8 +64,8 @@ class Experiment(PrintMessageMixin):
         A cross-validation strategy.  Accepts all options considered valid by
         scikit-learn.
     """
-    def __init__(self, package, model, scoring_metric, eval_metric=None, n_jobs=1, verbose=True, logger=None,
-                 data=None, X_cols=None, y_col=None, cv=None):
+    def __init__(self, package, model, scoring_metric, eval_metric=None, n_jobs=1,
+                 verbose=True, logger=None, data=None, X_cols=None, y_col=None, cv=None):
         PrintMessageMixin.__init__(self, verbose, logger)
         self.package = package
         self.model = model
@@ -91,18 +92,20 @@ class Experiment(PrintMessageMixin):
         self.print_message('Parameters:')
         self.print_message(model.get_params(), pprint=True)
 
-    def train_model(self, X=None, y=None, validate=False, early_stopping=False, early_stopping_rounds=None,
-                    plot_eval_history=False, fig_size=16):
+    def train_model(self, X=None, y=None, validate=False, early_stopping=False,
+                    early_stopping_rounds=None, plot_eval_history=False, fig_size=16):
         """
         Trains a new model using the provided training data.
 
         Parameters
         ----------
         X : array-like, optional, default None
-            Training input samples.  Must be specified if no data was provided during initialization.
+            Training input samples.  Must be specified if no data was provided during
+            initialization.
 
         y : array-like, optional, default None
-            Target values.  Must be specified if no data was provided during initialization.
+            Target values.  Must be specified if no data was provided during
+            initialization.
 
         validate : boolean, optional, default False
             Evaluate model on a hold-out set during training.
@@ -112,8 +115,8 @@ class Experiment(PrintMessageMixin):
             Eval must be enabled.
 
         early_stopping_rounds : int, optional, default None
-            Number of training iterations to allow before stopping training due to performance
-            on a validation set. Eval and early_stopping must be enabled.
+            Number of training iterations to allow before stopping training due to
+            performance on a validation set. Eval and early_stopping must be enabled.
 
         plot_eval_history : boolean, optional, default False
             Plot model performance as a function of training time.  Eval must be enabled.
@@ -140,21 +143,25 @@ class Experiment(PrintMessageMixin):
 
             if early_stopping:
                 if self.package == 'xgboost':
-                    self.model.fit(X_train, y_train, eval_set=[(X_eval, y_eval)], eval_metric=self.eval_metric,
-                                   early_stopping_rounds=early_stopping_rounds, verbose=self.verbose)
+                    self.model.fit(X_train, y_train, eval_set=[(X_eval, y_eval)],
+                                   eval_metric=self.eval_metric,
+                                   early_stopping_rounds=early_stopping_rounds,
+                                   verbose=self.verbose)
                 elif self.package == 'keras':
                     from keras.callbacks import EarlyStopping
                     callbacks = [
                         EarlyStopping(monitor='val_loss', patience=early_stopping_rounds)
                     ]
-                    training_history = self.model.fit(X_train, y_train, verbose=v, validation_data=(X_eval, y_eval),
+                    training_history = self.model.fit(X_train, y_train, verbose=v,
+                                                      validation_data=(X_eval, y_eval),
                                                       callbacks=callbacks)
             else:
                 if self.package == 'xgboost':
-                    self.model.fit(X_train, y_train, eval_set=[(X_eval, y_eval)], eval_metric=self.eval_metric,
-                                   verbose=self.verbose)
+                    self.model.fit(X_train, y_train, eval_set=[(X_eval, y_eval)],
+                                   eval_metric=self.eval_metric, verbose=self.verbose)
                 elif self.package == 'keras':
-                    training_history = self.model.fit(X_train, y_train, verbose=v, validation_data=(X_eval, y_eval))
+                    training_history = self.model.fit(X_train, y_train, verbose=v,
+                                                      validation_data=(X_eval, y_eval))
 
             if self.package == 'xgboost':
                 training_history = self.model.evals_result()['validation_0'][self.eval_metric]
@@ -171,7 +178,8 @@ class Experiment(PrintMessageMixin):
 
             t1 = time.time()
             self.print_message('Model training complete in {0:3f} s.'.format(t1 - t0))
-            self.print_message('Training score = {0}'.format(self.scorer_(self.model, X_train, y_train)))
+            self.print_message('Training score = {0}'
+                               .format(self.scorer_(self.model, X_train, y_train)))
             self.print_message('Min. evaluation score = {0}'.format(min_eval_loss))
             self.print_message('Min. evaluation epoch = {0}'.format(min_eval_epoch))
         elif validate:
@@ -182,7 +190,8 @@ class Experiment(PrintMessageMixin):
             self.model.fit(self.X, self.y)
             t1 = time.time()
             self.print_message('Model training complete in {0:3f} s.'.format(t1 - t0))
-            self.print_message('Training score = {0}'.format(self.scorer_(self.model, self.X, self.y)))
+            self.print_message('Training score = {0}'
+                               .format(self.scorer_(self.model, self.X, self.y)))
 
     def cross_validate(self, X=None, y=None, cv=None):
         """
@@ -191,14 +200,17 @@ class Experiment(PrintMessageMixin):
         Parameters
         ----------
         X : array-like, optional, default None
-            Training input samples.  Must be specified if no data was provided during initialization.
+            Training input samples.  Must be specified if no data was provided during
+            initialization.
 
         y : array-like, optional, default None
-            Target values.  Must be specified if no data was provided during initialization.
+            Target values.  Must be specified if no data was provided during
+            initialization.
 
         cv : object, optional, default None
             A cross-validation strategy.  Accepts all options considered valid by
-            scikit-learn.  Must be specified if no cv was passed in during initialization.
+            scikit-learn.  Must be specified if no cv was passed in during
+            initialization.
         """
         if X is not None:
             self.X = X
@@ -214,8 +226,9 @@ class Experiment(PrintMessageMixin):
         t0 = time.time()
         if self.package == 'keras':
             self.model.set_params(verbose=0)
-        results = cross_validate(self.model, self.X, self.y, scoring=self.scoring_metric, cv=self.cv,
-                                 n_jobs=self.n_jobs, verbose=0, return_train_score=True)
+        results = cross_validate(self.model, self.X, self.y, scoring=self.scoring_metric,
+                                 cv=self.cv, n_jobs=self.n_jobs, verbose=0,
+                                 return_train_score=True)
         t1 = time.time()
         self.print_message('Cross-validation complete in {0:3f} s.'.format(t1 - t0))
 
@@ -226,20 +239,23 @@ class Experiment(PrintMessageMixin):
 
     def learning_curve(self, X=None, y=None, cv=None, fig_size=16):
         """
-        Plots a learning curve showing model performance against both training and validation
-        data sets as a function of the number of training samples.
+        Plots a learning curve showing model performance against both training and
+        validation data sets as a function of the number of training samples.
 
         Parameters
         ----------
         X : array-like, optional, default None
-            Training input samples.  Must be specified if no data was provided during initialization.
+            Training input samples.  Must be specified if no data was provided during
+            initialization.
 
         y : array-like, optional, default None
-            Target values.  Must be specified if no data was provided during initialization.
+            Target values.  Must be specified if no data was provided during
+            initialization.
 
         cv : object, optional, default None
             A cross-validation strategy.  Accepts all options considered valid by
-            scikit-learn.  Must be specified if no cv was passed in during initialization.
+            scikit-learn.  Must be specified if no cv was passed in during
+            initialization.
 
         fig_size : int, optional, default 16
             Size of the plot.
@@ -260,9 +276,9 @@ class Experiment(PrintMessageMixin):
         if self.package == 'keras':
             self.model.set_params(verbose=0)
 
-        train_sizes, train_scores, test_scores = learning_curve(self.model, self.X, self.y, cv=self.cv,
-                                                                scoring=self.scoring_metric,
-                                                                n_jobs=self.n_jobs, verbose=0)
+        values = learning_curve(self.model, self.X, self.y, cv=self.cv,
+                                scoring=self.scoring_metric, n_jobs=self.n_jobs, verbose=0)
+        train_sizes, train_scores, test_scores = values
         train_scores_mean = np.mean(train_scores, axis=1)
         train_scores_std = np.std(train_scores, axis=1)
         test_scores_mean = np.mean(test_scores, axis=1)
@@ -272,10 +288,10 @@ class Experiment(PrintMessageMixin):
         ax.set_title('Learning Curve')
         ax.set_xlabel('Training Examples')
         ax.set_ylabel('Score')
-        ax.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std,
-                        alpha=0.1, color='b')
-        ax.fill_between(train_sizes, test_scores_mean - test_scores_std, test_scores_mean + test_scores_std,
-                        alpha=0.1, color='r')
+        ax.fill_between(train_sizes, train_scores_mean - train_scores_std,
+                        train_scores_mean + train_scores_std, alpha=0.1, color='b')
+        ax.fill_between(train_sizes, test_scores_mean - test_scores_std,
+                        test_scores_mean + test_scores_std, alpha=0.1, color='r')
         ax.plot(train_sizes, train_scores_mean, 'o-', color='b', label='Training score')
         ax.plot(train_sizes, test_scores_mean, 'o-', color='r', label='Cross-validation score')
         ax.legend(loc='best')
@@ -297,19 +313,22 @@ class Experiment(PrintMessageMixin):
             RandomSearchCV for acceptable formatting.
 
         X : array-like, optional, default None
-            Training input samples.  Must be specified if no data was provided during initialization.
+            Training input samples.  Must be specified if no data was provided during
+            initialization.
 
         y : array-like, optional, default None
-            Target values.  Must be specified if no data was provided during initialization.
+            Target values.  Must be specified if no data was provided during
+            initialization.
 
         cv : object, optional, default None
             A cross-validation strategy.  Accepts all options considered valid by
-            scikit-learn.  Must be specified if no cv was passed in during initialization.
+            scikit-learn.  Must be specified if no cv was passed in during
+            initialization.
 
         search_type : {'grid', 'random'}, optional, default 'grid'
-            Specifies use of grid search or random search.  Requirements for param_grid are
-            different depending on which method is used.  See scikit-learn documentation for
-            GridSearchCV and RandomSearchCV for details.
+            Specifies use of grid search or random search.  Requirements for param_grid
+            are different depending on which method is used.  See scikit-learn
+            documentation for GridSearchCV and RandomSearchCV for details.
 
         n_iter : int, optional, default 100
             Number of search iterations to run.  Only applies to random search.
@@ -339,9 +358,10 @@ class Experiment(PrintMessageMixin):
                                   n_jobs=self.n_jobs, cv=self.cv, refit=self.scoring_metric,
                                   verbose=0, return_train_score=True)
         elif search_type == 'random':
-            search = RandomizedSearchCV(self.model, param_grid, n_iter=n_iter, scoring=self.scoring_metric,
-                                        n_jobs=self.n_jobs, cv=self.cv, refit=self.scoring_metric,
-                                        verbose=0, return_train_score=True)
+            search = RandomizedSearchCV(self.model, param_grid, n_iter=n_iter,
+                                        scoring=self.scoring_metric, n_jobs=self.n_jobs,
+                                        cv=self.cv, refit=self.scoring_metric, verbose=0,
+                                        return_train_score=True)
         else:
             raise Exception('Search type not supported.')
 
@@ -390,9 +410,10 @@ class Experiment(PrintMessageMixin):
         Parameters
         ----------
         filename : string
-            Location of the file to write.  Scikit-learn, XGBoost, and Prophet use pickle to
-            write to disk (use .pkl extension for clarity) while Keras has a built-in save
-            function that uses the HDF5 file format, so Keras models must have a .h5 extension.
+            Location of the file to write.  Scikit-learn, XGBoost, and Prophet use
+            pickle to write to disk (use .pkl extension for clarity) while Keras has a
+            built-in save function that uses the HDF5 file format, so Keras models must
+            have a .h5 extension.
         """
         self.print_message('Saving model...')
         t0 = time.time()

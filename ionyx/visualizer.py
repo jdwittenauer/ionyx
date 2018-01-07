@@ -10,9 +10,10 @@ from print_message import PrintMessageMixin
 
 class Visualizer(PrintMessageMixin):
     """
-    Provides a number of descriptive functions for creating useful visualizations.  Initialize the
-    class by passing in a data set and then call the functions individually to create the plots.
-    Each method is designed to adapt the character of the visualization based on the inputs provided.
+    Provides a number of descriptive functions for creating useful visualizations.
+    Initialize the class by passing in a data set and then call the functions
+    individually to create the plots. Each method is designed to adapt the character of
+    the visualization based on the inputs provided.
     
     Parameters
     ----------
@@ -75,7 +76,8 @@ class Visualizer(PrintMessageMixin):
                 index = (i * plot_size) + j
                 if index < n_features:
                     if type(data.iloc[0, index]) is str:
-                        sb.countplot(x=data.columns[index], data=data, ax=ax[j // grid_size, j % grid_size])
+                        sb.countplot(x=data.columns[index], data=data,
+                                     ax=ax[j // grid_size, j % grid_size])
                     else:
                         sb.distplot(a=data.iloc[:, index], bins=bins, hist=hist, kde=kde,
                                     label=data.columns[index], ax=ax[j // grid_size, j % grid_size],
@@ -110,12 +112,14 @@ class Visualizer(PrintMessageMixin):
 
         self.print_message('Plot generation complete.')
 
-    def variable_relationship(self, quantitative_vars, category_vars=None, joint_viz_type='scatter',
-                              pair_viz_type='scatter', factor_viz_type='strip', pair_diag_type='kde'):
+    def variable_relationship(self, quantitative_vars, category_vars=None,
+                              joint_viz_type='scatter', pair_viz_type='scatter',
+                              factor_viz_type='strip', pair_diag_type='kde'):
         """
-        Generates plots showing the relationship between several variables.  The combination of plots generated
-        depends on the number of quantitative and discrete (categorical or ordinal) variables to be analyzed.
-        Plots are rendered using the seaborn statistical visualization package.
+        Generates plots showing the relationship between several variables.  The
+        combination of plots generated depends on the number of quantitative and discrete
+        (categorical or ordinal) variables to be analyzed. Plots are rendered using the
+        seaborn statistical visualization package.
 
         Parameters
         ----------
@@ -125,14 +129,17 @@ class Visualizer(PrintMessageMixin):
         category_vars : array-like, optional, default None
             List of variable names to analyze discretely.
 
-        joint_viz_type : {'scatter', 'reg', 'resid', 'kde', 'hex'}, optional, default 'scatter'
+        joint_viz_type : {'scatter', 'reg', 'resid', 'kde', 'hex'},
+                        optional, default 'scatter'
             Method to use to display two quantitative variables together.
 
         pair_viz_type : {'scatter', 'reg'}, optional, default 'scatter'
             Method to use to display more than two quantitative variables together.
 
-        factor_viz_type : {'point', 'bar', 'count', 'box', 'violin', 'strip'}, optional, default 'strip'
-            Method to use to display one quantitative variable along with categorical variables.
+        factor_viz_type : {'point', 'bar', 'count', 'box', 'violin', 'strip'},
+                        optional, default 'strip'
+            Method to use to display one quantitative variable along with categorical
+            variables.
 
         pair_diag_type : {'hist', 'kde'}, optional, default 'kde'
             Display type for the diagonal plots in a pair plot.
@@ -188,8 +195,9 @@ class Visualizer(PrintMessageMixin):
                     sb.lmplot(x=quantitative_vars[0], y=quantitative_vars[1], data=self.data,
                               col=category_vars[0], row=category_vars[1], size=self.fig_size)
             else:
-                sb.pairplot(data=self.data, hue=category_vars[0], vars=quantitative_vars, kind=pair_viz_type,
-                            diag_kind=pair_diag_type, size=self.fig_size / len(quantitative_vars))
+                sb.pairplot(data=self.data, hue=category_vars[0], vars=quantitative_vars,
+                            kind=pair_viz_type, diag_kind=pair_diag_type,
+                            size=self.fig_size / len(quantitative_vars))
 
         self.print_message('Plot generation complete.')
 
@@ -225,7 +233,8 @@ class Visualizer(PrintMessageMixin):
         n_plots = n_features // plot_size if n_features % plot_size == 0 else n_features // plot_size + 1
 
         for i in range(n_plots):
-            fig, ax = plt.subplots(grid_size, grid_size, sharex=True, figsize=(self.fig_size, self.fig_size / 2))
+            fig, ax = plt.subplots(grid_size, grid_size, sharex=True,
+                                   figsize=(self.fig_size, self.fig_size / 2))
             for j in range(plot_size):
                 index = (i * plot_size) + j
                 if index < n_features:
@@ -245,9 +254,11 @@ class Visualizer(PrintMessageMixin):
 
         self.print_message('Plot generation complete.')
 
-    def transform(self, transform, X_columns, y_column=None, task=None, n_components=2, scatter_size=50):
+    def transform(self, transform, X_columns, y_column=None, task=None,
+                  n_components=2, scatter_size=50):
         """
-        Generates plots to visualize the data transformed by a linear or manifold algorithm.
+        Generates plots to visualize the data transformed by a linear or manifold
+        algorithm.
 
         Parameters
         ----------
@@ -261,8 +272,9 @@ class Visualizer(PrintMessageMixin):
             Target column.  Used to color input values for label-based visualizations.
 
         task : {'classification', 'regression', None}, optional, default None
-            Specifies if the data set is being used for classification or regression.  If one of these
-            is specified, the plots will color input values using the provided labels.
+            Specifies if the data set is being used for classification or regression.
+            If one of these is specified, the plots will color input values using the
+            provided labels.
 
         n_components : int, optional, default 2
             Number of components of the transformed data set to visualize.
@@ -312,7 +324,8 @@ class Visualizer(PrintMessageMixin):
 
         self.print_message('Plot generation complete.')
 
-    def feature_importance(self, X_columns, y_column, average=False, task='classification', **kwargs):
+    def feature_importance(self, X_columns, y_column, average=False,
+                           task='classification', **kwargs):
         """
         Visualize the predictive importance of each feature in a data set using a trained
         gradient boosting model.
@@ -326,14 +339,15 @@ class Visualizer(PrintMessageMixin):
             Target column.  Used to color input values for label-based visualizations.
 
         average : boolean, optional, default False
-            Smooth the results by fitting the model multiple times to reduce random variance.
+            Smooth the results by fitting the model multiple times to reduce random
+            variance.
 
         task : {'classification', 'regression'}, optional, default 'classification'
             Specifies if the target is continuous or categorical.
 
         **kwargs : dict, optional
-            Arguments to pass to the scikit-learn gradient boosting model to improve the quality
-            of the fit.  If none are provided then the defaults will be used.
+            Arguments to pass to the scikit-learn gradient boosting model to improve the
+            quality of the fit.  If none are provided then the defaults will be used.
         """
         self.print_message('Generating feature importance plot...')
 
@@ -373,8 +387,9 @@ class Visualizer(PrintMessageMixin):
     def partial_dependence(self, X_columns, y_column, var_column, average=False,
                            task='classification', grid_resolution=100, **kwargs):
         """
-        Visualize the marginal effect of a single variable on a dependent variable, holding
-        all other variables constant.  Generated via a trained gradient boosting model.
+        Visualize the marginal effect of a single variable on a dependent variable,
+        holding all other variables constant.  Generated via a trained gradient
+        boosting model.
 
         Parameters
         ----------
@@ -388,7 +403,8 @@ class Visualizer(PrintMessageMixin):
             The name of the variable to comparse to the response value.
 
         average : boolean, optional, default False
-            Smooth the results by fitting the model multiple times to reduce random variance.
+            Smooth the results by fitting the model multiple times to reduce random
+            variance.
 
         task : {'classification', 'regression'}, optional, default 'classification'
             Specifies if the target is continuous or categorical.
@@ -397,8 +413,8 @@ class Visualizer(PrintMessageMixin):
             Defines the granularity of the segments in the plot.
 
         **kwargs : dict, optional
-            Arguments to pass to the scikit-learn gradient boosting model to improve the quality
-            of the fit.  If none are provided then the defaults will be used.
+            Arguments to pass to the scikit-learn gradient boosting model to improve the
+            quality of the fit.  If none are provided then the defaults will be used.
         """
         self.print_message('Generating partial dependence plot...')
 

@@ -52,9 +52,9 @@ class Blender(PrintMessageMixin):
 
     def build_ensemble(self, X, y, cv, task='classification', retrain=False, **kwargs):
         """
-        Construct an ensemble of independent estimators using a voting or averaging scheme
-        (depending on if the task is classification or regression) to decide on the final
-        prediction.
+        Construct an ensemble of independent estimators using a voting or averaging
+        scheme (depending on if the task is classification or regression) to decide
+        on the final prediction.
 
         Parameters
         ----------
@@ -109,9 +109,9 @@ class Blender(PrintMessageMixin):
 
     # def build_stacking_ensemble(self, X, y, cv, layer_cv, layer_mask, retrain=False):
     #     """
-    #     Construct a stacked ensemble of models.  Stacking uses model predictions from lower
-    #     layers as inputs to a model at a higher layer.  This technique can be used for both
-    #     classification and regression.
+    #     Construct a stacked ensemble of models.  Stacking uses model predictions from
+    #     lower layers as inputs to a model at a higher layer.  This technique can be used
+    #     for both classification and regression.
     #
     #     Parameters
     #     ----------
@@ -146,7 +146,8 @@ class Blender(PrintMessageMixin):
     #     layers = []
     #     layer_idx = list(set(layer_mask))
     #     for i in (range(len(layer_idx)) - 1):
-    #         layer_models = [x for idx, x in enumerate(self.models) if layer_mask[idx] == layer_idx[i]]
+    #         layer_models = [x for idx, x in enumerate(self.models)
+    #                         if layer_mask[idx] == layer_idx[i]]
     #         layer = make_stack_layer(layer_models, cv=layer_cv, n_jobs=self.n_jobs)
     #         layers.append(layer)
     #
@@ -173,9 +174,9 @@ class Blender(PrintMessageMixin):
     #
     # def model_correlations(self, X, y, cv):
     #     """
-    #     Visualize how correlated each model's predictions are with one another.  Correlations
-    #     are based on out-of-sample predictions using cross-validation to compare real-world
-    #     model performance.
+    #     Visualize how correlated each model's predictions are with one another.
+    #     Correlations are based on out-of-sample predictions using cross-validation to
+    #     compare real-world model performance.
     #
     #     Parameters
     #     ----------

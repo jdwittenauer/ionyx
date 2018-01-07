@@ -4,14 +4,16 @@ from sklearn.preprocessing import LabelEncoder
 
 class CategoryEncoder(object):
     """
-    Transform class that encodes text-based categorical variables into integers ranging from 0 to
-    distinct_values-1, where distinct_values is the number of unique values in each category.
+    Transform class that encodes text-based categorical variables into integers ranging
+    from 0 to distinct_values-1, where distinct_values is the number of unique values in
+    each category.
 
     Parameters
     ----------
     categorical_features : array-like, optional, default None
-        A list of integers representing the column indices to apply the transform to.  If None,
-        the transform will attempt to apply itself to all columns with string values.
+        A list of integers representing the column indices to apply the transform to.
+        If None, the transform will attempt to apply itself to all columns with string
+        values.
     """
     def __init__(self, categorical_features=None):
         self.categorical_features = categorical_features
