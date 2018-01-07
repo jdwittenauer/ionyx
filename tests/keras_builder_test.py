@@ -4,6 +4,8 @@ from keras.wrappers.scikit_learn import KerasClassifier
 from ionyx.contrib.keras_builder import KerasBuilder
 from ionyx.datasets import DataSetLoader
 
+print('Beginning keras builder test...')
+
 data, X, y = DataSetLoader.load_forest_cover()
 n_classes = len(np.unique(y)) + 1
 
@@ -18,3 +20,5 @@ estimator = KerasClassifier(build_fn=KerasBuilder.build_dense_model, input_size=
 estimator.fit(X, to_categorical(y, n_classes))
 score = estimator.score(X, to_categorical(y, n_classes))
 print('Estimator score = {0}'.format(score))
+
+print('Done.')

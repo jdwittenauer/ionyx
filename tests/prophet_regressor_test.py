@@ -5,8 +5,9 @@ from ionyx.contrib import ProphetRegressor
 from ionyx.contrib import TimeSeriesSplit
 from ionyx.datasets import DataSetLoader
 
-data, X, y = DataSetLoader.load_time_series()
+print('Beginning prophet regressor test...')
 
+data, X, y = DataSetLoader.load_time_series()
 prophet = ProphetRegressor(n_changepoints=0)
 prophet.fit(X, y)
 print('Model score = {0}'.format(mean_absolute_error(y, prophet.predict(X))))
@@ -25,3 +26,5 @@ results = pd.DataFrame(grid.cv_results_)
 results = results.sort_values(by='mean_test_score', ascending=False)
 print('Grid search results:')
 print(results)
+
+print('Done.')

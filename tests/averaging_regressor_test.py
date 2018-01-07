@@ -7,6 +7,8 @@ from sklearn.svm import LinearSVR
 from ionyx.contrib import AveragingRegressor
 from ionyx.datasets import DataSetLoader
 
+print('Beginning averaging regressor test...')
+
 data, X, y = DataSetLoader.load_property_inspection()
 data = data.iloc[:1000, :]
 X = X[:1000, :]
@@ -38,3 +40,5 @@ results = pd.DataFrame(grid.cv_results_)
 results = results.sort_values(by='mean_test_score', ascending=False)
 print('Grid search results:')
 print(results)
+
+print('Done.')

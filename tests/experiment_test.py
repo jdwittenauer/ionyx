@@ -6,6 +6,8 @@ from ionyx import Experiment
 from ionyx.contrib.keras_builder import KerasBuilder
 from ionyx.datasets import DataSetLoader
 
+print('Beginning experiment test...')
+
 data, _, _ = DataSetLoader.load_forest_cover()
 X_cols = data.columns[1:].tolist()
 y_col = data.columns[0]
@@ -16,7 +18,6 @@ experiment = Experiment(package='sklearn', model=logistic, scoring_metric='accur
 experiment.train_model()
 experiment.cross_validate()
 experiment.learning_curve()
-
 param_grid = [
     {
         'alpha': [0.01, 0.1, 1.0]
@@ -49,3 +50,5 @@ experiment.cross_validate(X, y, cv)
 experiment.save_model('/home/john/temp/model.h5')
 experiment.load_model('/home/john/temp/model.h5')
 print(experiment.model)
+
+print('Done.')

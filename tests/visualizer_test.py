@@ -2,6 +2,8 @@ from sklearn.decomposition import PCA
 from ionyx.datasets import DataSetLoader
 from ionyx import Visualizer
 
+print('Beginning visualizer test...')
+
 data, _, _ = DataSetLoader.load_property_inspection()
 viz = Visualizer(data)
 viz.feature_distributions()
@@ -33,3 +35,5 @@ viz = Visualizer(data)
 viz.feature_importance(X_columns=X_cols, y_column=y_col, average=True, task='classification')
 viz.partial_dependence(X_columns=X_cols, y_column=y_col, var_column='feat_15', average=True,
                        task='classification')
+
+print('Done.')
