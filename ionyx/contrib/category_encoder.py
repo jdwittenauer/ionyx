@@ -10,7 +10,7 @@ class CategoryEncoder(object):
 
     Parameters
     ----------
-    categorical_features : array-like, optional, default None
+    categorical_features : list optional, default None
         A list of integers representing the column indices to apply the transform to.
         If None, the transform will attempt to apply itself to all columns with string
         values.

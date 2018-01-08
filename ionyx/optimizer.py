@@ -87,6 +87,18 @@ class Optimizer(PrintMessageMixin):
         """
         self.print_message('Beginning optimization procedure...')
         t0 = time.time()
+
+        if self.algorithm not in ['bayes', 'logistic', 'ridge', 'elastic_net', 'linear_svm', 'svm',
+                                  'random_forest', 'extra_trees', 'gradient_boosting', 'xgboost',
+                                  'keras', 'prophet']:
+            raise Exception('Invalid value for algorithm.')
+
+        if self.task not in ['classification', 'regression']:
+            raise Exception('Invalid value for task.')
+
+        if self.search_type not in ['grid', 'random']:
+            raise Exception('Invalid value for search_type.')
+
         t1 = time.time()
         self.print_message('Optimization complete in {0:3f} s.'.format(t1 - t0))
 

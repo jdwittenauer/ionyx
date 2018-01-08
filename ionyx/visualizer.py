@@ -149,6 +149,18 @@ class Visualizer(PrintMessageMixin):
         if quantitative_vars is None or len(quantitative_vars) == 0:
             raise Exception('Must provide at least one quantitative variable.')
 
+        if joint_viz_type not in ['scatter', 'reg', 'resid', 'kde', 'hex']:
+            raise Exception('Invalid value for joint_viz_type.')
+
+        if pair_viz_type not in ['scatter', 'reg']:
+            raise Exception('Invalid value for pair_viz_type.')
+
+        if factor_viz_type not in ['point', 'bar', 'count', 'box', 'violin', 'strip']:
+            raise Exception('Invalid value for factor_viz_type.')
+
+        if pair_diag_type not in ['hist', 'kde']:
+            raise Exception('Invalid value for pair_diag_type.')
+
         sub_data = self.data[quantitative_vars]
         fig, ax = plt.subplots(1, 1, figsize=(self.fig_size, self.fig_size * 3 / 4))
         sb.violinplot(data=sub_data, ax=ax)
@@ -210,7 +222,7 @@ class Visualizer(PrintMessageMixin):
         time : string, optional, default 'index'
             Datetime input column to use for visualization.
 
-        smooth_method : {'mean', 'var', 'skew', 'kurt'}, optional, default None
+        smooth_method : {'mean', 'var', 'skew', 'kurt', None}, optional, default None
             Apply a function to the time series to smooth out variations.
 
         window : int, optional, default 1
@@ -220,6 +232,9 @@ class Visualizer(PrintMessageMixin):
             Number of vertical/horizontal plots to display in a single window.
         """
         self.print_message('Generating sequential relationship plots...')
+
+        if smooth_method not in ['mean', 'var', 'skew', 'kurt', None]:
+            raise Exception('Invalid value for smooth_method.')
 
         data = self.data.fillna(0)
 
@@ -283,6 +298,9 @@ class Visualizer(PrintMessageMixin):
             Size of the points on the scatter plot.
         """
         self.print_message('Generating transform plot...')
+
+        if task not in ['classification', 'regression', None]:
+            raise Exception('Invalid value for task.')
 
         X = self.data[X_columns].values
         X = transform.fit_transform(X)
@@ -351,6 +369,9 @@ class Visualizer(PrintMessageMixin):
         """
         self.print_message('Generating feature importance plot...')
 
+        if task not in ['classification', 'regression']:
+            raise Exception('Invalid value for task.')
+
         X = self.data[X_columns]
         y = self.data[y_column]
 
@@ -400,7 +421,7 @@ class Visualizer(PrintMessageMixin):
             Target column.  Used to color input values for label-based visualizations.
 
         var_column : string
-            The name of the variable to comparse to the response value.
+            The name of the variable to compare to the response value.
 
         average : boolean, optional, default False
             Smooth the results by fitting the model multiple times to reduce random
@@ -417,6 +438,9 @@ class Visualizer(PrintMessageMixin):
             quality of the fit.  If none are provided then the defaults will be used.
         """
         self.print_message('Generating partial dependence plot...')
+
+        if task not in ['classification', 'regression']:
+            raise Exception('Invalid value for task.')
 
         X = self.data[X_columns]
         y = self.data[y_column]

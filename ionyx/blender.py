@@ -3,6 +3,7 @@ import time
 import pprint as pp
 import numpy as np
 import pandas as pd
+# make_stack_layer is not yet finalized, will be in scikit-learn 0.20
 # from sklearn.ensemble import VotingClassifier, make_stack_layer
 from sklearn.ensemble import VotingClassifier
 from sklearn.model_selection import cross_validate
@@ -89,6 +90,9 @@ class Blender(PrintMessageMixin):
         self.print_message('y dimensions = {0}'.format(y.shape))
         self.print_message('Cross-validation strategy = {0}'.format(cv))
         t0 = time.time()
+
+        if task not in ['classification', 'regression']:
+            raise Exception('Invalid value for task.')
 
         if task == 'classification':
             ensemble = VotingClassifier(self.models, **kwargs)

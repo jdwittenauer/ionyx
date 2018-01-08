@@ -11,7 +11,7 @@ class CategoryToNumeric(object):
 
     Parameters
     ----------
-    categorical_features : array-like
+    categorical_features : list
         A list of integers representing the column indices to apply the transform to.
 
     metric : {'mean', 'median', 'std'}, optional, default 'mean'
@@ -50,7 +50,7 @@ class CategoryToNumeric(object):
                 elif self.metric == 'std':
                     self.feature_map_[i][j] = y[X[:, i] == j].std()
                 else:
-                    raise Exception('Metric not not recognized.')
+                    raise Exception('Metric not recognized.')
 
     def transform(self, X):
         """

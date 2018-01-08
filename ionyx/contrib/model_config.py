@@ -5,7 +5,7 @@ from sklearn.linear_model import ElasticNet, LogisticRegression, Ridge
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import LinearSVC, LinearSVR, SVC, SVR
 from xgboost import XGBClassifier, XGBRegressor
-from ..contrib import ProphetRegressor
+from prophet_regressor import ProphetRegressor
 
 
 class ModelConfig(object):

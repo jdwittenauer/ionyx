@@ -143,6 +143,9 @@ class Experiment(PrintMessageMixin):
         v = 1 if self.verbose else 0
         t0 = time.time()
 
+        if self.package not in ['sklearn', 'xgboost', 'keras', 'prophet']:
+            raise Exception('Package not supported.')
+
         if validate and self.package in ['xgboost', 'keras']:
             X_train, X_eval, y_train, y_eval = train_test_split(self.X, self.y, test_size=0.1)
             training_history = None
@@ -232,11 +235,17 @@ class Experiment(PrintMessageMixin):
         self.print_message('y dimensions = {0}'.format(self.y.shape))
         self.print_message('Cross-validation strategy = {0}'.format(self.cv))
         t0 = time.time()
+
+        if self.package not in ['sklearn', 'xgboost', 'keras', 'prophet']:
+            raise Exception('Package not supported.')
+
         if self.package == 'keras':
             self.model.set_params(verbose=0)
+
         results = cross_validate(self.model, self.X, self.y, scoring=self.scoring_metric,
                                  cv=self.cv, n_jobs=self.n_jobs, verbose=0,
                                  return_train_score=True)
+
         t1 = time.time()
         self.print_message('Cross-validation complete in {0:3f} s.'.format(t1 - t0))
 
@@ -280,6 +289,9 @@ class Experiment(PrintMessageMixin):
         self.print_message('y dimensions = {0}'.format(self.y.shape))
         self.print_message('Cross-validation strategy = {0}'.format(self.cv))
         t0 = time.time()
+
+        if self.package not in ['sklearn', 'xgboost', 'keras', 'prophet']:
+            raise Exception('Package not supported.')
 
         if self.package == 'keras':
             self.model.set_params(verbose=0)
@@ -357,6 +369,9 @@ class Experiment(PrintMessageMixin):
         self.print_message('y dimensions = {0}'.format(self.y.shape))
         self.print_message('Cross-validation strategy = {0}'.format(self.cv))
         t0 = time.time()
+
+        if self.package not in ['sklearn', 'xgboost', 'keras', 'prophet']:
+            raise Exception('Package not supported.')
 
         if self.package == 'keras':
             self.model.set_params(verbose=0)

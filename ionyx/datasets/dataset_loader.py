@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from zipfile import ZipFile
 from sklearn.preprocessing import LabelEncoder
-from ..contrib import CategoryEncoder
+from ..contrib.category_encoder import CategoryEncoder
 
 
 class DataSetLoader(object):

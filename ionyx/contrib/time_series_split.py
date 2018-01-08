@@ -56,17 +56,20 @@ class TimeSeriesSplit(_BaseKFold):
         n_samples = _num_samples(X)
         n_splits = self.n_splits
         n_folds = n_splits + 1
+
         if n_folds > n_samples:
             raise ValueError(
                 ("Cannot have number of folds ={0} greater"
                  " than the number of samples: {1}.").format(n_folds,
                                                              n_samples))
+
         if (self.min_train_size and self.max_train_size
                 and self.min_train_size > self.max_train_size):
             raise ValueError(
                 ("Cannot have min_train_size ={0} greater"
                  " than max_train_size: {1}").format(self.min_train_size,
                                                      self.max_train_size))
+
         indices = np.arange(n_samples)
         if self.min_train_size:
             test_size = ((n_samples - self.min_train_size) // n_splits)
@@ -77,6 +80,7 @@ class TimeSeriesSplit(_BaseKFold):
             test_size = (n_samples // n_folds)
             test_starts = range(test_size + n_samples % n_folds,
                                 n_samples, test_size)
+
         for test_start in test_starts:
             if self.max_train_size and self.max_train_size < test_start:
                 yield (indices[test_start - self.max_train_size:test_start],

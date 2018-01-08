@@ -15,8 +15,10 @@ class Logger(object):
     def __init__(self, path, mode='replace'):
         if mode == 'append':
             self.log = open(path, 'a')
-        else:
+        elif mode == 'replace':
             self.log = open(path, 'w')
+        else:
+            raise Exception('Mode not supported.')
 
     def write(self, message):
         """
