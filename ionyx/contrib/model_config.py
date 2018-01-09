@@ -99,31 +99,65 @@ class ModelConfig(object):
                      'keras', 'prophet'}
             Model algorithm to provide a grid of parameter settings.
         """
-        if algorithm == 'logistic':
+        if task not in ['classification', 'regression']:
+            raise Exception('No task defined for {0}'.format(task))
+
+        if algorithm == 'bayes':
+            param_grid = []
+        elif algorithm == 'logistic':
             param_grid = [
                 {
                     'penalty': ['l1', 'l2'],
                     'C': [1, 3, 10, 30, 100, 300, 1000, 3000]
                 }
             ]
-        elif algorithm == 'linear':
+        elif algorithm == 'ridge':
             param_grid = [
                 {
                     'alpha': [0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0]
                 }
             ]
-        elif algorithm == 'svm':
+        elif algorithm == 'elastic_net':
             param_grid = [
                 {
-                    'C': [1, 3, 10, 30, 100, 300, 1000, 3000],
-                    'kernel': ['linear', 'rbf', 'poly', 'sigmoid']
+                    'alpha': [0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0],
+                    'l1_ratio': [0.1, 0.3, 0.5, 0.7, 0.9]
                 }
             ]
+        elif algorithm == 'linear_svm':
+            if task == 'classification':
+                param_grid = [
+                    {
+                        'penalty': ['l1', 'l2'],
+                        'C': [1, 3, 10, 30, 100, 300, 1000, 3000]
+                    }
+                ]
+            else:
+                param_grid = [
+                    {
+                        'C': [1, 3, 10, 30, 100, 300, 1000, 3000]
+                    }
+                ]
+        elif algorithm == 'svm':
+            if task == 'classification':
+                param_grid = [
+                    {
+                        'C': [1, 3, 10, 30, 100, 300, 1000, 3000],
+                        'kernel': ['linear', 'rbf', 'poly', 'sigmoid']
+                    }
+                ]
+            else:
+                param_grid = [
+                    {
+                        'C': [1, 3, 10, 30, 100, 300, 1000, 3000],
+                        'epsilon': [0.001, 0.01, 0.1, 1],
+                        'kernel': ['linear', 'rbf', 'poly', 'sigmoid']
+                    }
+                ]
         elif algorithm == 'random_forest' or algorithm == 'extra_trees':
             param_grid = [
                 {
                     'n_estimators': [10, 30, 100, 300],
-                    'criterion': ['gini', 'entropy', 'mse', 'mae'],
                     'max_features': ['sqrt', 'log2', None],
                     'max_depth': [3, 5, 7, 9, None],
                     'min_samples_split': [2, 10, 30, 100],
@@ -134,7 +168,6 @@ class ModelConfig(object):
         elif algorithm == 'gradient_boosting':
             param_grid = [
                 {
-                    'loss': ['deviance', 'exponential', 'ls', 'lad', 'huber', 'quantile'],
                     'learning_rate': [0.0003, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0],
                     'n_estimators': [100, 300, 1000],
                     'max_depth': [3, 5, 7, 9, None],
@@ -151,17 +184,11 @@ class ModelConfig(object):
                     'max_depth': [3, 5, 7, 9, None],
                     'learning_rate': [0.003, 0.01, 0.03, 0.1, 0.3, 1.0],
                     'n_estimators': [100, 300, 1000],
-                    'objective': ['reg:linear', 'reg:logistic', 'binary:logistic',
-                                  'multi:softmax', 'multi:softprob', 'rank:pairwise'],
                     'booster': ['gbtree', 'gblinear', 'dart'],
-                    'gamma': [0],
                     'min_child_weight': [1, 3, 5, 7, None],
-                    'max_delta_step': [0],
                     'subsample': [1.0, 0.9, 0.8, 0.7],
                     'colsample_bytree': [1.0, 0.9, 0.8, 0.7],
                     'colsample_bylevel': [1.0, 0.9, 0.8, 0.7],
-                    'reg_alpha': [0],
-                    'reg_lambda': [1]
                 }
             ]
         elif algorithm == 'keras':
@@ -176,20 +203,6 @@ class ModelConfig(object):
                     'batch_normalization': [True, False],
                     'dropout': [0, 0.5],
                     'optimizer': ['sgd', 'rmsprop', 'adagrad', 'adadelta', 'adam', 'adamax', 'nadam'],
-                    'loss': ['mean_squared_error',
-                             'mean_absolute_error',
-                             'mean_absolute_percentage_error',
-                             'mean_squared_logarithmic_error',
-                             'squared_hinge',
-                             'hinge',
-                             'categorical_hinge',
-                             'logcosh',
-                             'categorical_crossentropy',
-                             'sparse_categorical_crossentropy',
-                             'binary_crossentropy',
-                             'kullback_leibler_divergence',
-                             'poisson',
-                             'cosine_proximity'],
                     'batch_size': [16, 32, 64, 128, 256],
                     'nb_epoch': [10, 30, 100, 300, 1000]
                 }
@@ -205,7 +218,7 @@ class ModelConfig(object):
                 }
             ]
         else:
-            raise Exception('No params defined for ' + algorithm)
+            raise Exception('No model defined for {0}'.format(algorithm))
 
         return param_grid
 
@@ -225,31 +238,65 @@ class ModelConfig(object):
                      'keras', 'prophet'}
             Model algorithm to provide a grid of parameter settings.
         """
-        if algorithm == 'logistic':
+        if task not in ['classification', 'regression']:
+            raise Exception('No task defined for {0}'.format(task))
+
+        if algorithm == 'bayes':
+            param_grid = []
+        elif algorithm == 'logistic':
             param_grid = [
                 {
                     'penalty': ['l1', 'l2'],
                     'C': randint(1, 3000)
                 }
             ]
-        elif algorithm == 'linear':
+        elif algorithm == 'ridge':
             param_grid = [
                 {
                     'alpha': uniform(0.0001, 0.9999)
                 }
             ]
-        elif algorithm == 'svm':
+        elif algorithm == 'elastic_net':
             param_grid = [
                 {
-                    'C': randint(1, 3000),
-                    'kernel': ['linear', 'rbf', 'poly', 'sigmoid']
+                    'alpha': uniform(0.0001, 0.9999),
+                    'l1_ratio': uniform(0.1, 0.8)
                 }
             ]
+        elif algorithm == 'linear_svm':
+            if task == 'classification':
+                param_grid = [
+                    {
+                        'penalty': ['l1', 'l2'],
+                        'C': randint(1, 3000)
+                    }
+                ]
+            else:
+                param_grid = [
+                    {
+                        'C': randint(1, 3000)
+                    }
+                ]
+        elif algorithm == 'svm':
+            if task == 'classification':
+                param_grid = [
+                    {
+                        'C': randint(1, 3000),
+                        'kernel': ['linear', 'rbf', 'poly', 'sigmoid']
+                    }
+                ]
+            else:
+                param_grid = [
+                    {
+                        'C': randint(1, 3000),
+                        'epsilon': uniform(0.001, 0.999),
+                        'kernel': ['linear', 'rbf', 'poly', 'sigmoid']
+                    }
+                ]
         elif algorithm == 'random_forest' or algorithm == 'extra_trees':
             param_grid = [
                 {
                     'n_estimators': randint(10, 300),
-                    'criterion': ['gini', 'entropy', 'mse', 'mae'],
                     'max_features': ['sqrt', 'log2', None],
                     'max_depth': randint(3, 10),
                     'min_samples_split': randint(2, 100),
@@ -260,7 +307,6 @@ class ModelConfig(object):
         elif algorithm == 'gradient_boosting':
             param_grid = [
                 {
-                    'loss': ['deviance', 'exponential', 'ls', 'lad', 'huber', 'quantile'],
                     'learning_rate': uniform(0.0001, 0.9999),
                     'n_estimators': randint(100, 1000),
                     'max_depth': randint(3, 10),
@@ -277,8 +323,6 @@ class ModelConfig(object):
                     'max_depth': randint(3, 10),
                     'learning_rate': uniform(0.0001, 0.9999),
                     'n_estimators': randint(100, 1000),
-                    'objective': ['reg:linear', 'reg:logistic', 'binary:logistic',
-                                  'multi:softmax', 'multi:softprob', 'rank:pairwise'],
                     'booster': ['gbtree', 'gblinear', 'dart'],
                     'min_child_weight': randint(1, 10),
                     'subsample': uniform(0.7, 0.3),
@@ -298,20 +342,6 @@ class ModelConfig(object):
                     'batch_normalization': [True, False],
                     'dropout': [0, 0.5],
                     'optimizer': ['sgd', 'rmsprop', 'adagrad', 'adadelta', 'adam', 'adamax', 'nadam'],
-                    'loss': ['mean_squared_error',
-                             'mean_absolute_error',
-                             'mean_absolute_percentage_error',
-                             'mean_squared_logarithmic_error',
-                             'squared_hinge',
-                             'hinge',
-                             'categorical_hinge',
-                             'logcosh',
-                             'categorical_crossentropy',
-                             'sparse_categorical_crossentropy',
-                             'binary_crossentropy',
-                             'kullback_leibler_divergence',
-                             'poisson',
-                             'cosine_proximity'],
                     'batch_size': randint(16, 256),
                     'nb_epoch': randint(10, 1000)
                 }
@@ -327,6 +357,6 @@ class ModelConfig(object):
                 }
             ]
         else:
-            raise Exception('No params defined for ' + algorithm)
+            raise Exception('No model defined for {0}'.format(algorithm))
 
         return param_grid
