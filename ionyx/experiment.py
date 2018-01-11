@@ -393,7 +393,8 @@ class Experiment(PrintMessageMixin):
         t1 = time.time()
         self.print_message('Hyper-parameter search complete in {0:3f} s.'.format(t1 - t0))
         self.print_message('Best score found = {0}'.format(search.best_score_))
-        self.print_message('Best parameters found = {0}'.format(search.best_params_))
+        self.print_message('Best parameters found:')
+        self.print_message(search.best_params_, pprint=True)
         self.best_model_ = search.best_estimator_
 
         if save_results_path:

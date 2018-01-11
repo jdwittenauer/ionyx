@@ -1,5 +1,14 @@
 import time
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from .contrib.model_config import ModelConfig
 from .print_message import PrintMessageMixin
+
+
+def _combine_dict(x, y):
+    x.update(y)
+    return x
 
 
 class Optimizer(PrintMessageMixin):
@@ -51,6 +60,11 @@ class Optimizer(PrintMessageMixin):
     logger : object, optional, default None
         An instantiated log writer with an open file handle.  If provided, messages
         will be written to the log file.
+
+    Attributes
+    ----------
+    param_grid_ : list
+        The hyper-parameter grid constructed by the algorithm to conduct a search.
     """
     def __init__(self, X, y, cv, algorithm, scoring_metric, task='classification',
                  search_type='grid', n_iter=100, n_jobs=1, verbose=True, logger=None):
@@ -63,8 +77,8 @@ class Optimizer(PrintMessageMixin):
         self.task = task
         self.search_type = search_type
         self.n_iter = n_iter
-        self.param_grid = param_grid
         self.n_jobs = n_jobs
+        self.param_grid_ = None
         self.print_message('Configuring optimizer...')
         self.print_message('X dimensions = {0}'.format(X.shape))
         self.print_message('y dimensions = {0}'.format(y.shape))
@@ -96,10 +110,46 @@ class Optimizer(PrintMessageMixin):
         if self.task not in ['classification', 'regression']:
             raise Exception('Invalid value for task.')
 
-        if self.search_type not in ['grid', 'random']:
+        scaler = StandardScaler()
+        transform = ModelConfig.get_transform('pca')
+        model = ModelConfig.get_model(self.task, self.algorithm)
+        pipe = Pipeline([('scaler', scaler), ('transform', transform), ('model', model)])
+        n_features = self.X.shape[1]
+
+        if self.algorithm == 'keras':
+            model.set_params(verbose=0)
+
+        self.print_message('Building parameter grid...')
+        self.param_grid_ = [
+            ModelConfig.transform_search_params(self.search_type, 'pca', n_features, 'transform'),
+            ModelConfig.transform_search_params(self.search_type, 'kpca', n_features, 'transform'),
+            ModelConfig.transform_search_params(self.search_type, 'grp', n_features, 'transform'),
+            ModelConfig.transform_search_params(self.search_type, 'fa', n_features, 'transform'),
+            ModelConfig.transform_search_params(self.search_type, 'k_best', n_features, 'transform')
+        ]
+        model_grid = ModelConfig.model_search_params(self.search_type, self.task, self.algorithm, 'model')
+        self.param_grid_ = [_combine_dict(x, model_grid) for x in self.param_grid_]
+
+        self.print_message('Initiating search...')
+        if self.search_type == 'grid':
+            search = GridSearchCV(pipe, param_grid=self.param_grid_, scoring=self.scoring_metric,
+                                  n_jobs=self.n_jobs, cv=self.cv, refit=self.scoring_metric,
+                                  verbose=0, return_train_score=True)
+        elif self.search_type == 'random':
+            # TODO - won't work, doesn't handle list of dict for param_grid
+            search = RandomizedSearchCV(pipe, self.param_grid_, n_iter=self.n_iter,
+                                        scoring=self.scoring_metric, n_jobs=self.n_jobs,
+                                        cv=self.cv, refit=self.scoring_metric, verbose=0,
+                                        return_train_score=True)
+        else:
             raise Exception('Invalid value for search_type.')
+
+        search.fit(self.X, self.y)
 
         t1 = time.time()
         self.print_message('Optimization complete in {0:3f} s.'.format(t1 - t0))
+        self.print_message('Best score found = {0}'.format(search.best_score_))
+        self.print_message('Best parameters found:')
+        self.print_message(search.best_params_, pprint=True)
 
-        return None
+        return search.best_estimator_
