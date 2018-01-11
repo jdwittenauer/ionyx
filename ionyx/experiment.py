@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import get_scorer
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.model_selection import cross_validate, learning_curve, train_test_split
-from print_message import PrintMessageMixin
+from .print_message import PrintMessageMixin
 
 
 class Experiment(PrintMessageMixin):

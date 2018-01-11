@@ -5,7 +5,7 @@ import seaborn as sb
 from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
 from sklearn.ensemble.partial_dependence import partial_dependence
 from sklearn.preprocessing import LabelEncoder
-from print_message import PrintMessageMixin
+from .print_message import PrintMessageMixin
 
 
 class Visualizer(PrintMessageMixin):

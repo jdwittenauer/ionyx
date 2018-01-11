@@ -8,9 +8,9 @@ import pandas as pd
 from sklearn.ensemble import VotingClassifier
 from sklearn.model_selection import cross_validate
 from sklearn.pipeline import make_pipeline
-from visualizer import Visualizer
-from contrib.averaging_regressor import AveragingRegressor
-from print_message import PrintMessageMixin
+from .visualizer import Visualizer
+from .contrib.averaging_regressor import AveragingRegressor
+from .print_message import PrintMessageMixin
 
 
 class Blender(PrintMessageMixin):

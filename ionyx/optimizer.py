@@ -1,5 +1,5 @@
 import time
-from print_message import PrintMessageMixin
+from .print_message import PrintMessageMixin
 
 
 class Optimizer(PrintMessageMixin):
