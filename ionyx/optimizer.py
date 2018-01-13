@@ -135,16 +135,55 @@ class Optimizer(PrintMessageMixin):
             search = GridSearchCV(pipe, param_grid=self.param_grid_, scoring=self.scoring_metric,
                                   n_jobs=self.n_jobs, cv=self.cv, refit=self.scoring_metric,
                                   verbose=0, return_train_score=True)
+            search.fit(self.X, self.y)
         elif self.search_type == 'random':
-            # TODO - won't work, doesn't handle list of dict for param_grid
-            search = RandomizedSearchCV(pipe, self.param_grid_, n_iter=self.n_iter,
-                                        scoring=self.scoring_metric, n_jobs=self.n_jobs,
-                                        cv=self.cv, refit=self.scoring_metric, verbose=0,
-                                        return_train_score=True)
+            n_sub_iter = self.n_iter // 5
+            search_pca = RandomizedSearchCV(pipe, self.param_grid_[0], n_iter=n_sub_iter,
+                                            scoring=self.scoring_metric, n_jobs=self.n_jobs,
+                                            cv=self.cv, refit=self.scoring_metric, verbose=0,
+                                            return_train_score=True)
+            search_pca.fit(self.X, self.y)
+            search_kpca = RandomizedSearchCV(pipe, self.param_grid_[1], n_iter=n_sub_iter,
+                                             scoring=self.scoring_metric, n_jobs=self.n_jobs,
+                                             cv=self.cv, refit=self.scoring_metric, verbose=0,
+                                             return_train_score=True)
+            search_kpca.fit(self.X, self.y)
+            search_grp = RandomizedSearchCV(pipe, self.param_grid_[2], n_iter=n_sub_iter,
+                                            scoring=self.scoring_metric, n_jobs=self.n_jobs,
+                                            cv=self.cv, refit=self.scoring_metric, verbose=0,
+                                            return_train_score=True)
+            search_grp.fit(self.X, self.y)
+            search_fa = RandomizedSearchCV(pipe, self.param_grid_[3], n_iter=n_sub_iter,
+                                           scoring=self.scoring_metric, n_jobs=self.n_jobs,
+                                           cv=self.cv, refit=self.scoring_metric, verbose=0,
+                                           return_train_score=True)
+            search_fa.fit(self.X, self.y)
+            search_k_best = RandomizedSearchCV(pipe, self.param_grid_[4], n_iter=n_sub_iter,
+                                               scoring=self.scoring_metric, n_jobs=self.n_jobs,
+                                               cv=self.cv, refit=self.scoring_metric, verbose=0,
+                                               return_train_score=True)
+            search_k_best.fit(self.X, self.y)
+
+            best_scores = [search_pca.best_score_, search_kpca.best_score_, search_grp.best_score_,
+                           search_fa.best_score_, search_k_best.best_score_]
+
+            if min(best_scores) < 0:
+                index = best_scores.index(min(best_scores))
+            else:
+                index = best_scores.index(max(best_scores))
+
+            if index == 0:
+                search = search_pca
+            elif index == 1:
+                search = search_kpca
+            elif index == 2:
+                search = search_grp
+            elif index == 3:
+                search = search_fa
+            else:
+                search = search_k_best
         else:
             raise Exception('Invalid value for search_type.')
-
-        search.fit(self.X, self.y)
 
         t1 = time.time()
         self.print_message('Optimization complete in {0:3f} s.'.format(t1 - t0))
