@@ -3,22 +3,21 @@ import time
 import pprint as pp
 import numpy as np
 import pandas as pd
-# make_stack_layer is not yet finalized, will be in scikit-learn 0.20
-# from sklearn.ensemble import VotingClassifier, make_stack_layer
 from sklearn.ensemble import VotingClassifier
 from sklearn.model_selection import cross_validate
-from sklearn.pipeline import make_pipeline
+from sklearn.pipeline import Pipeline
 from .visualizer import Visualizer
 from .contrib.averaging_regressor import AveragingRegressor
+from .contrib.stacking import make_stack_layer
 from .print_message import PrintMessageMixin
 
 
 class Blender(PrintMessageMixin):
     """
-    Provides a unified API for training, evaluating, and generating predictions from an
-    ensemble of diverse, unrelated models.  There are two general strategies to combining
-    predictions from independent models - voting/averaging, and stacking.  This class
-    aims to support model training, validation, and prediction using both strategies.
+    Provides a unified API for training and evaluating an ensemble of diverse, unrelated
+    models.  There are two general strategies to combining predictions from independent
+    models - voting/averaging, and stacking.  This class aims to support model training
+    and validation using both strategies.
 
     Various ensemble strategies are described in detail here:
     https://mlwave.com/kaggle-ensembling-guide/
@@ -46,6 +45,12 @@ class Blender(PrintMessageMixin):
 
     Attributes
     ----------
+    train_score_ : float
+        Average training score computed during cross-validation.
+
+    test_score_ : float
+        Average test score computed during cross-validation.
+
     ensemble_ : object
         Fitted ensemble model.  Only available after using one of the "build ensemble"
         functions with retrain set to True.
@@ -55,6 +60,8 @@ class Blender(PrintMessageMixin):
         self.models = models
         self.scoring_metric = scoring_metric
         self.n_jobs = n_jobs
+        self.train_score_ = None
+        self.test_score_ = None
         self.ensemble_ = None
 
     def build_ensemble(self, X, y, cv, task='classification', retrain=False, **kwargs):
@@ -104,10 +111,10 @@ class Blender(PrintMessageMixin):
         t1 = time.time()
         self.print_message('Ensemble cross-validation complete in {0:3f} s.'.format(t1 - t0))
 
-        train_score = np.mean(results['train_score'])
-        test_score = np.mean(results['test_score'])
-        self.print_message('Training score = {0}'.format(train_score))
-        self.print_message('Cross-validation score = {0}'.format(test_score))
+        self.train_score_ = np.mean(results['train_score'])
+        self.test_score_ = np.mean(results['test_score'])
+        self.print_message('Training score = {0}'.format(self.train_score_))
+        self.print_message('Cross-validation score = {0}'.format(self.test_score_ ))
 
         if retrain:
             self.print_message('Re-training ensemble on full data set...')
@@ -150,29 +157,30 @@ class Blender(PrintMessageMixin):
         self.print_message('Beginning stacking ensemble training...')
         self.print_message('X dimensions = {0}'.format(X.shape))
         self.print_message('y dimensions = {0}'.format(y.shape))
-        self.print_message('Cross-validation strategy = {0}'.format(cv))
+        self.print_message('Layer cross-validation strategy = {0}'.format(layer_cv))
+        self.print_message('Stacker cross-validation strategy = {0}'.format(cv))
         t0 = time.time()
 
         layers = []
         layer_idx = list(set(layer_mask))
-        for i in (range(len(layer_idx)) - 1):
+        for i in range(len(layer_idx) - 1):
             layer_models = [x for idx, x in enumerate(self.models)
                             if layer_mask[idx] == layer_idx[i]]
             layer = make_stack_layer(layer_models, cv=layer_cv, n_jobs=self.n_jobs)
-            layers.append(layer)
+            layers.append(('layer {0}'.format(i), layer))
 
-        layers.append(self.models[-1][1])
-        ensemble = make_pipeline(layers)
+        layers.append(self.models[-1])
+        ensemble = Pipeline(layers)
         results = cross_validate(ensemble, X, y, scoring=self.scoring_metric, cv=cv,
                                  n_jobs=self.n_jobs, verbose=0, return_train_score=True)
 
         t1 = time.time()
         self.print_message('Ensemble cross-validation complete in {0:3f} s.'.format(t1 - t0))
 
-        train_score = np.mean(results['train_score'])
-        test_score = np.mean(results['test_score'])
-        self.print_message('Training score = {0}'.format(train_score))
-        self.print_message('Cross-validation score = {0}'.format(test_score))
+        self.train_score_ = np.mean(results['train_score'])
+        self.test_score_ = np.mean(results['test_score'])
+        self.print_message('Training score = {0}'.format(self.train_score_))
+        self.print_message('Cross-validation score = {0}'.format(self.test_score_ ))
 
         if retrain:
             self.print_message('Re-training ensemble on full data set...')
@@ -207,11 +215,11 @@ class Blender(PrintMessageMixin):
         t0 = time.time()
 
         names, _ = zip(*self.models)
-        layer = make_stack_layer(self.models, cv=cv, n_jobs=self.n_jobs)
+        layer = make_stack_layer(self.models, cv=cv, n_jobs=self.n_jobs, method='predict')
         predictions = layer.fit_transform(X, y)
         df = pd.DataFrame(predictions, columns=names)
         viz = Visualizer(df)
-        viz.visualize_correlations()
+        viz.feature_correlations(color_palette='Blues', annotate=True)
 
         t1 = time.time()
         self.print_message('Correlation testing complete in {0:3f} s.'.format(t1 - t0))

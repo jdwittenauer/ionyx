@@ -7,5 +7,6 @@ from .category_to_numeric import CategoryToNumeric
 from .logger import Logger
 from .model_config import ModelConfig
 from .prophet_regressor import ProphetRegressor
+from .stacking import StackingTransformer, make_stack_layer
 from .time_series_split import TimeSeriesSplit
 from .utils import Utils

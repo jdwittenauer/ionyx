@@ -86,12 +86,15 @@ class Visualizer(PrintMessageMixin):
 
         self.print_message('Plot generation complete.')
 
-    def feature_correlations(self, annotate=False):
+    def feature_correlations(self, color_palette='coolwarm', annotate=False):
         """
         Generates a correlation matrix heat map.
 
         Parameters
         ----------
+        color_palette : string, optional, default 'coolwarm'
+            Seaborn color palette.
+
         annotate : boolean, optional, default False
             Annotate the heat map with labels.
         """
@@ -106,7 +109,7 @@ class Visualizer(PrintMessageMixin):
         mask[np.triu_indices_from(mask)] = True
 
         fig, ax = plt.subplots(figsize=(self.fig_size, self.fig_size * 3 / 4))
-        colormap = sb.blend_palette(sb.color_palette('coolwarm'), as_cmap=True)
+        colormap = sb.blend_palette(sb.color_palette(color_palette), as_cmap=True)
         sb.heatmap(corr, mask=mask, cmap=colormap, annot=annotate)
         fig.tight_layout()
 
