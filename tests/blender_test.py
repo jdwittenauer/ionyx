@@ -1,7 +1,7 @@
-from sklearn.linear_model import LogisticRegression, Ridge
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import KFold
-from sklearn.svm import SVC, SVR
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.utils import shuffle
 from ionyx import Blender
 from ionyx.datasets import DataSetLoader

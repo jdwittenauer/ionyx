@@ -84,7 +84,7 @@ class ModelConfig(object):
                 from ..contrib.keras_builder import KerasBuilder
                 model = KerasRegressor(build_fn=KerasBuilder.build_dense_model)
             elif algorithm == 'prophet':
-                from prophet_regressor import ProphetRegressor
+                from ..contrib.prophet_regressor import ProphetRegressor
                 model = ProphetRegressor()
             else:
                 raise Exception('No model defined for {0}'.format(algorithm))

@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from .contrib.model_config import ModelConfig
+from .model_config import ModelConfig
 from .blender import Blender
 from .print_message import PrintMessageMixin
 
