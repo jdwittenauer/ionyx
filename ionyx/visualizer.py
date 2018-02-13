@@ -35,7 +35,7 @@ class Visualizer(PrintMessageMixin):
         self.data = data
         self.fig_size = fig_size
 
-    def feature_distributions(self, viz_type='hist', bins=None, grid_size=4):
+    def feature_distributions(self, viz_type='hist', bins=None, max_features=None, grid_size=4):
         """
         Generates feature distribution plots (histogram or kde) for each feature.
 
@@ -46,6 +46,9 @@ class Visualizer(PrintMessageMixin):
 
         bins : int, optional, default None
             Number of bins to use in histogram plots.
+
+        max_features : int, optional, default None
+            The maximum number of columns in the data to plot.
 
         grid_size : int, optional, default 4
             Number of vertical/horizontal plots to display in a single window.
@@ -65,6 +68,9 @@ class Visualizer(PrintMessageMixin):
             raise Exception('Visualization type not supported.')
 
         data = self.data.fillna(0)
+
+        if max_features:
+            data = data.iloc[:, :max_features]
 
         n_features = len(data.columns)
         plot_size = grid_size ** 2
@@ -86,7 +92,7 @@ class Visualizer(PrintMessageMixin):
 
         self.print_message('Plot generation complete.')
 
-    def feature_correlations(self, color_palette='coolwarm', annotate=False):
+    def feature_correlations(self, color_palette='coolwarm', max_features=None, annotate=False):
         """
         Generates a correlation matrix heat map.
 
@@ -95,12 +101,18 @@ class Visualizer(PrintMessageMixin):
         color_palette : string, optional, default 'coolwarm'
             Seaborn color palette.
 
+        max_features : int, optional, default None
+            The maximum number of columns in the data to plot.
+
         annotate : boolean, optional, default False
             Annotate the heat map with labels.
         """
         self.print_message('Generating feature correlations plot...')
 
-        corr = self.data.corr()
+        if max_features:
+            corr = self.data.iloc[:, :max_features].corr()
+        else:
+            corr = self.data.corr()
 
         if annotate:
             corr = np.round(corr, 2)
@@ -304,6 +316,9 @@ class Visualizer(PrintMessageMixin):
 
         if task not in ['classification', 'regression', None]:
             raise Exception('Invalid value for task.')
+
+        if hasattr(transform, 'n_components'):
+            transform.n_components = n_components
 
         X = self.data[X_columns].values
         X = transform.fit_transform(X)

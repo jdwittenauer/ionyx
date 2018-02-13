@@ -14,7 +14,7 @@ y_col = data.columns[0]
 logistic = LogisticRegression()
 cv = KFold()
 experiment = Experiment(package='sklearn', model=logistic, scoring_metric='accuracy',
-                        verbose=True, data=data, X_cols=X_cols, y_col=y_col, cv=cv)
+                        verbose=True, data=data, X_columns=X_cols, y_column=y_col, cv=cv)
 experiment.train_model()
 experiment.cross_validate()
 experiment.learning_curve()

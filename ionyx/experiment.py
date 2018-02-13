@@ -31,7 +31,7 @@ class Experiment(PrintMessageMixin):
         Name of the metric to use to score models.  Text must match a valid scikit-learn
         metric.
 
-    eval_metric : string
+    eval_metric : string, optional, default None
         Separate metric used specifically for evaluation such as hold-out sets during
         training.  Text must match an evaluation metric supported by the package the
         model originates from.
@@ -52,10 +52,10 @@ class Experiment(PrintMessageMixin):
         function call. If "data" is specified then "X_columns" and "y_column" must also
         be specified.
 
-    X_cols : list, optional, default None
+    X_columns : list, optional, default None
         List of columns in "data" to use for the training set.
 
-    y_col : string, optional, default None
+    y_column : string, optional, default None
         Name of the column in "data" to use as a label for supervised learning.
 
     cv : object, optional, default None
@@ -70,8 +70,8 @@ class Experiment(PrintMessageMixin):
     best_model_ : object
         The best model found during a parameter search.
     """
-    def __init__(self, package, model, scoring_metric, eval_metric=None, n_jobs=1,
-                 verbose=True, logger=None, data=None, X_cols=None, y_col=None, cv=None):
+    def __init__(self, package, model, scoring_metric, eval_metric=None, n_jobs=1, verbose=True,
+                 logger=None, data=None, X_columns=None, y_column=None, cv=None):
         PrintMessageMixin.__init__(self, verbose, logger)
         self.package = package
         self.model = model
@@ -82,9 +82,9 @@ class Experiment(PrintMessageMixin):
         self.best_model_ = None
         self.data = data
         if self.data is not None:
-            if X_cols and y_col:
-                self.X = data[X_cols].values
-                self.y = data[y_col].values
+            if X_columns and y_column:
+                self.X = data[X_columns].values
+                self.y = data[y_column].values
             else:
                 raise Exception('X and y columns must be specified if data set is provided.')
         self.cv = cv
@@ -196,6 +196,7 @@ class Experiment(PrintMessageMixin):
         else:
             if self.package == 'keras':
                 self.model.set_params(verbose=v)
+
             self.model.fit(self.X, self.y)
             t1 = time.time()
             self.print_message('Model training complete in {0:3f} s.'.format(t1 - t0))
