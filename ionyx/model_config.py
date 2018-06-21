@@ -198,14 +198,15 @@ class ModelConfig(object):
                 }
             elif algorithm == 'keras':
                 param_grid = {
-                    'layer_size': [32, 64, 128, 256, 512, 1024],
+                    'input_layer_size': [32, 64, 128, 256, 512, 1024],
+                    'hidden_layer_size': [32, 64, 128, 256, 512, 1024],
                     'n_hidden_layers': [1, 2, 3, 4, 5, 6],
                     'activation_function': ['elu', 'selu', 'softplus', 'softsign', 'relu', 'tanh',
                                             'sigmoid', 'hard_sigmoid', 'linear'],
                     'output_activation': ['elu', 'selu', 'softplus', 'softsign', 'relu', 'tanh',
                                           'sigmoid', 'hard_sigmoid', 'linear'],
                     'batch_normalization': [True, False],
-                    'dropout': [0, 0.5],
+                    'dropout': [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
                     'optimizer': ['sgd', 'rmsprop', 'adagrad', 'adadelta', 'adam', 'adamax', 'nadam'],
                     'batch_size': [16, 32, 64, 128, 256],
                     'nb_epoch': [10, 30, 100, 300, 1000]
@@ -292,14 +293,15 @@ class ModelConfig(object):
                 }
             elif algorithm == 'keras':
                 param_grid = {
-                    'layer_size': randint(32, 1024),
+                    'input_layer_size': randint(32, 1024),
+                    'hidden_layer_size': randint(32, 1024),
                     'n_hidden_layers': randint(1, 6),
                     'activation_function': ['elu', 'selu', 'softplus', 'softsign', 'relu', 'tanh',
                                             'sigmoid', 'hard_sigmoid', 'linear'],
                     'output_activation': ['elu', 'selu', 'softplus', 'softsign', 'relu', 'tanh',
                                           'sigmoid', 'hard_sigmoid', 'linear'],
                     'batch_normalization': [True, False],
-                    'dropout': [0, 0.5],
+                    'dropout': uniform(0.0, 0.5),
                     'optimizer': ['sgd', 'rmsprop', 'adagrad', 'adadelta', 'adam', 'adamax', 'nadam'],
                     'batch_size': randint(16, 256),
                     'nb_epoch': randint(10, 1000)
