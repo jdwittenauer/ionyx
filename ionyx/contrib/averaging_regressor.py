@@ -1,6 +1,6 @@
 import numpy as np
+from joblib import Parallel, delayed
 from sklearn.base import RegressorMixin, clone
-from sklearn.externals.joblib import Parallel, delayed
 from sklearn.utils import Bunch
 from sklearn.utils.metaestimators import _BaseComposition
 
